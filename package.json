@@ -1,0 +1,8 @@
+{
+  "name": "socket-chat-client",
+  "version": "0.0.1",
+  "description": "my first chat client using socket.io",
+  "dependencies": {
+    "express": "~4.10.2"
+  }
+}
