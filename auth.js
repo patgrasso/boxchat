@@ -102,6 +102,7 @@ module.exports = function (app) {
 		mongoose: mongoose,
         store: sessionStore,
 		bodyParser: bodyParser,
+        cookieParser: cookieParser,
 		login: login
 	};
 };
