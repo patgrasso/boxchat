@@ -8,49 +8,45 @@ var passport = auth.passport;
 app.get('/', function (req, res) {
 	if (req.isAuthenticated()) {
 		res.redirect('/chat');
+	} else {
+		res.redirect('/login');
 	}
-	res.redirect('/login');
 });
 
 
 app.get('/login', function (req, res) {
-	res.sendFile(__dirname + '/views/login.html');
+	if (req.isAuthenticated()) {
+		res.redirect('/chat');
+	} else {
+		res.sendFile(__dirname + '/views/login.html');
+	}
 });
 
 
 app.post('/login', function (req, res, next) {
 	if (req.isAuthenticated()) {
 		res.redirect('/chat');
+	} else {
+		auth.login(req, res, next);
 	}
-	auth.login(req, res, next);
-});
-
-
-app.get('/loginFailure', function (req, res, next) {
-	res.send('Authentication Failed');
-});
-
-
-app.get('/loginSuccess', function (req, res, next) {
-	res.redirect(__dirname + '/views/chat.html');
 });
 
 
 app.get('/chat', function (req, res, next) {
 	if (req.isAuthenticated()) {
-		console.log(req.user._id);
-		res.send(req.user);
+		res.send('Welcome, ' + req.user.displayName + '.<br />' + 
+			'Please visit /logout to log out.');
+	} else {
+		res.redirect('/login');
 	}
-	res.redirect('/login');
 });
 
 
 app.get('/logout', function (req, res, next) {
 	if (req.isAuthenticated()) {
 		req.logout();
-		res.redirect('/login');
 	}
-	res.send('You are not logged in, and hence do not need to be logged out.');
+	res.redirect('/login');
 });
 
 

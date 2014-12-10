@@ -3,6 +3,7 @@ var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 var mongoose = require('mongoose/');
 var session = require('express-session');
+var cookieParser = require('cookie-parser');
 
 
 // MongoDB
@@ -11,7 +12,8 @@ mongoose.connect('mongodb://localhost/MyDatabase');
 var Schema = mongoose.Schema;
 var UserDetail = new Schema({
 		username: String,
-		password: String
+		password: String,
+		displayName: String
 	}, {
 		collection: 'userInfo'
 	});
@@ -79,7 +81,8 @@ function login(req, res, next) {
 
 // Export
 module.exports = function (app) {
-	// Use session
+	// Set up session usage
+	app.use(cookieParser());
 	app.use(session({
 		secret: 'keyboard cat',
 		resave: false,
