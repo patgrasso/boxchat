@@ -2,7 +2,16 @@ var app = require('express')();
 var http = require('http').Server(app);
 var auth = require('./auth')(app);
 var passport = auth.passport;
+var socketChat = require('./socket-chat')(http, auth);
 
+var clientFiles = [
+		'/client-js/chat-client.js'
+	]
+
+// Allow GET for files in clientFiles
+app.use(clientFiles, function (req, res) {
+	res.sendFile(__dirname + req.baseUrl);
+});
 
 // Routing
 app.get('/', function (req, res) {
@@ -34,8 +43,7 @@ app.post('/login', function (req, res, next) {
 
 app.get('/chat', function (req, res, next) {
 	if (req.isAuthenticated()) {
-		res.send('Welcome, ' + req.user.displayName + '.<br />' + 
-			'Please visit /logout to log out.');
+		res.sendFile(__dirname + '/views/index.html');
 	} else {
 		res.redirect('/login');
 	}

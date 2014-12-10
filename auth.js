@@ -4,10 +4,12 @@ var LocalStrategy = require('passport-local').Strategy;
 var mongoose = require('mongoose/');
 var session = require('express-session');
 var cookieParser = require('cookie-parser');
+var MongoStore = require('connect-mongo')(session);
 
 
 // MongoDB
 mongoose.connect('mongodb://localhost/MyDatabase');
+var sessionStore = new MongoStore( {mongoose_connection: mongoose.connection} );
 
 var Schema = mongoose.Schema;
 var UserDetail = new Schema({
@@ -85,6 +87,7 @@ module.exports = function (app) {
 	app.use(cookieParser());
 	app.use(session({
 		secret: 'keyboard cat',
+        store: sessionStore,
 		resave: false,
 		saveUninitialized: true
 	}));
@@ -97,6 +100,7 @@ module.exports = function (app) {
 	return {
 		passport: passport,
 		mongoose: mongoose,
+        store: sessionStore,
 		bodyParser: bodyParser,
 		login: login
 	};
