@@ -8,12 +8,15 @@ var clientFiles = [
 		'/client-js/chat-client.js'
 	]
 
+
 // Allow GET for files in clientFiles
 app.use(clientFiles, function (req, res) {
 	res.sendFile(__dirname + req.baseUrl);
 });
 
-// Routing
+
+// ~~ ROUTING ~~ //
+
 app.get('/', function (req, res) {
 	if (req.isAuthenticated()) {
 		res.redirect('/chat');
@@ -38,6 +41,16 @@ app.post('/login', function (req, res, next) {
 	} else {
 		auth.login(req, res, next);
 	}
+});
+
+
+app.get('/register', function (req, res, next) {
+    res.sendFile(__dirname + '/views/register.html');
+});
+
+
+app.post('/register', function (req, res, next) {
+    auth.register(req, res, next);
 });
 
 

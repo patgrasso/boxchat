@@ -16,10 +16,20 @@ module.exports = function (http, auth) {
 	
 	// Connection handler
 	io.on('connection', function (socket) {
-		console.log(socket.request.user.displayName + ' has connected');
+		var user = socket.request.user;
+		console.log(user.displayName + ' has connected');
 
+
+		// Chat Message
+		socket.on('chat_message', function (msg) {
+			console.log(user.displayName + ' : ' + msg);
+			io.emit('chat_message', user.displayName + ' : ' + msg);
+		});
+		
+
+		// Disconnect
 		socket.on('disconnect', function () {
-			console.log('user disconnected');
+			console.log(user.displayName + ' has disconnected');
 		});
 	});
 

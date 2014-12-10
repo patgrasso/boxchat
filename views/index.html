@@ -2,15 +2,21 @@
 <html>
 	<head>
 		<title>Socket.IO Chat Client</title>
+        <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
         <script src="/socket.io/socket.io.js"></script>
-        <script src="/client-js/chat-client.js"></script>
 	</head>
 	<body>
 		<div id="message-list-box">
-			<ul id="messages">
+			<ul id="messages" style="list-style-type: none;">
 			</ul>
+            <form action="">
+                <input type="text" id="m" autocomplete="off" />
+                <button>Send</button>
+            </form>
+            <a href="/logout">Log Out</a>
 		</div>
 		<div id="users">
         </div>
+        <script src="/client-js/chat-client.js"></script>
 	</body>
 </html>

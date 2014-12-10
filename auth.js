@@ -1,3 +1,4 @@
+// Initialize modules
 var bodyParser = require('body-parser');
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
@@ -6,15 +7,18 @@ var session = require('express-session');
 var cookieParser = require('cookie-parser');
 var MongoStore = require('connect-mongo')(session);
 
+// Encryption
+var bcrypt = require('bcrypt');
+
 
 // MongoDB
 mongoose.connect('mongodb://localhost/MyDatabase');
-var sessionStore = new MongoStore( {mongoose_connection: mongoose.connection} );
 
 var Schema = mongoose.Schema;
 var UserDetail = new Schema({
 		username: String,
 		password: String,
+		salt: String,
 		displayName: String
 	}, {
 		collection: 'userInfo'
@@ -22,20 +26,27 @@ var UserDetail = new Schema({
 var UserDetails = mongoose.model('userInfo', UserDetail);
 
 
+// Connect-Mongo (session storage)
+var sessionStore = new MongoStore( {mongoose_connection: mongoose.connection} );
+
+
 // Passport
 passport.serializeUser(function (user, done) {
-	done(null, user);
+    console.log(user.id);
+	done(null, user.id);
 });
 
 
-passport.deserializeUser(function (user, done) {
-	done(null, user);
+passport.deserializeUser(function (id, done) {
+	UserDetails.findById(id, function (err, user) {
+        done(err, user);
+    });
 });
 
 
 passport.use(new LocalStrategy(function (username, password, done) {
 	process.nextTick(function () {
-		// Auth Check Logic
+		// Query userInfo for username, then compare passwords
 		UserDetails.findOne({
 			'username': username
 		}, function (err, user) {
@@ -47,7 +58,7 @@ passport.use(new LocalStrategy(function (username, password, done) {
 				return done(null, false);
 			}
 
-			if (user.password != password) {
+			if (!bcrypt.compareSync(password, user.password)) {
 				return done(null, false);
 			}
 
@@ -71,6 +82,8 @@ function login(req, res, next) {
 			return res.redirect('/login');
 		}
 
+        console.log(user);
+
 		req.logIn(user, function (err) {
 			if (err) {
 				return next(err);
@@ -81,8 +94,39 @@ function login(req, res, next) {
 }
 
 
+function register(req, res, next) {
+    var username	= req.body.username,
+		password	= req.body.password,
+		displayName = req.body.displayName,
+		salt		= bcrypt.genSaltSync(10),
+		hash		= bcrypt.hashSync(password, salt);
+
+	// Check to see if user exists
+	UserDetails.findOne({
+		'username': username
+	}, function (err, user) {
+		if (user) {
+			return res.send('<a href="/register">Username already taken</a>');
+		}
+
+		// If no user is found (disregard errors), create the user
+		UserDetails.create({
+			username: username,
+			password: hash,
+			displayName: displayName,
+			salt: salt
+		}, function (err, user) {
+			console.log(err);
+			console.log(user);
+			res.redirect('/login');
+		});
+	});
+}
+
+
 // Export
 module.exports = function (app) {
+
 	// Set up session usage
 	app.use(cookieParser());
 	app.use(session({
@@ -103,6 +147,7 @@ module.exports = function (app) {
         store: sessionStore,
 		bodyParser: bodyParser,
         cookieParser: cookieParser,
-		login: login
+		login: login,
+		register: register
 	};
 };
