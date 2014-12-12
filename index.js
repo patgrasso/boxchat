@@ -8,7 +8,6 @@ var clientFiles = [
 		'/client-js/chat-client.js'
 	]
 
-
 // Allow GET for files in clientFiles
 app.use(clientFiles, function (req, res) {
 	res.sendFile(__dirname + req.baseUrl);
@@ -27,6 +26,7 @@ app.get('/', function (req, res) {
 
 
 app.get('/login', function (req, res) {
+    console.log("/login: " + req.ip);
 	if (req.isAuthenticated()) {
 		res.redirect('/chat');
 	} else {
