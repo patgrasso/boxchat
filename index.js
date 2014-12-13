@@ -6,7 +6,20 @@ var socketChat = require('./socket-chat')(http, auth);
 
 var clientFiles = [
 		'/client-js/chat-client.js'
-	]
+	];
+
+// Global protocol objects
+var CHAT_AUX_TYPE = {
+	startTyping: 'start_typing',
+	stopTyping: 'stop_typing'
+};
+
+var USER_STATUS = {
+	online: 'online',
+	offline: 'offline',
+	away: 'away'
+};
+
 
 // Allow GET for files in clientFiles
 app.use(clientFiles, function (req, res) {

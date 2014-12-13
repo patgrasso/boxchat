@@ -130,7 +130,7 @@ module.exports = function (app) {
 	// Set up session usage
 	app.use(cookieParser());
 	app.use(session({
-		secret: 'keyboard cat',
+		secret: 'cat keyboard',
         store: sessionStore,
 		resave: false,
 		saveUninitialized: true

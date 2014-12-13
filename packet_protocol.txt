@@ -1,0 +1,35 @@
+============================= BOXCHAT PROTOCOL =============================
+
+chat_message: Standard chat message
+{
+	from: user.displayName,
+	message: [string with message (check for max length)],
+	datetime: [global date&time]
+}
+
+chat_aux: Auxillary information for chatting, such as "user typing".
+	Can also specify a color for the message
+{
+	from: user.displayName,
+	type: [one of CHAT_AUX_TYPE's members],
+	message: [information]
+}
+
+user_status: Used for updating users' statuses, such as when a user
+	disconnects or connects (or even goes idle -- this idea needs
+	some thought before being implemented though *privacy concerns*)
+{
+	user: user.displayName,
+	connected: true/false,
+	status: [one of USER_STATUS's members],
+}
+
+ketchup: When a user logs in, they need the current session's messages
+	so that they know what everybody else is talking about. This is
+	actually just an array of <chat_message>s. *In the future, consider
+	sending the user <= a fixed number of messages, and if they scroll
+	up, request more from the server. For now, we can send the user
+	all of the messages, though
+[ {chat_message}, {chat_message}, {chat_message}, ... ]
+
+
