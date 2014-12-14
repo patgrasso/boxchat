@@ -3,9 +3,33 @@ module.exports = function (http, auth) {
 	// Initialize modules
 	var io = require('socket.io')(http);
 	var passportSocketIO = require('passport.socketio');
-	var fs = require('fs');
-    var messages = loadMessageData('message_archive.dat');
-	var appendToArchive = 'message_archive.dat';
+	var archive = require('./message-archive')('message_archive.dat');
+	var users = [];
+
+	// Attach a method to remove a user
+	users.removeUser = function (user) {
+		var i, newArr = this.filter(function (el) {
+			return el.username !== user.username;
+		});
+		this.length = 0;
+		for (i = 0; i < newArr.length; i += 1) {
+			this.push(newArr[i]);
+		}
+	};
+
+	
+	// Global protocol objects
+	var CHAT_AUX_TYPE = {
+		startTyping: 'start_typing',
+		stopTyping: 'stop_typing'
+	};
+
+	var USER_STATUS = {
+		online: 'online',
+		offline: 'offline',
+		away: 'away'
+	};
+
 
 	// Use passport.socketio to store user data in socket.request.user
 	io.use(passportSocketIO.authorize({
@@ -16,65 +40,7 @@ module.exports = function (http, auth) {
 	}));
 
 
-	// ~~ ARCHIVE HANDLING ~~ //
 
-	// Load messages from the archive file
-	function loadMessageData(filename) {
-		var buf, lines, msgArr = [];
-
-		try {
-			buf = fs.readFileSync(filename);
-			lines = buf.toString().split('\n');
-			lines.forEach(function (line) {
-				if (line !== '') {
-					msgArr.push(createMessageFromArchive(line));
-				}
-			});
-		} catch (exception) {
-			console.log(exception);
-		}
-		
-		return msgArr;
-	}
-
-
-	// Create a JSON array with the data from a message that can be stored
-	// in the archive file
-	function formatMessageToArchive(msg) {
-		return '["' + msg.from + '","' + msg.message + '","' + msg.datetime + '"]';
-	}
-
-
-	// Creates an object from an an entry in the message archive
-	function createMessageFromArchive(line) {
-		var dataArr = JSON.parse(line);
-		return {
-			from: dataArr[0],
-			message: dataArr[1],
-			datetime: dataArr[2]
-		};
-	}
-
-	
-	// Create a stream for appending new message data to the archive
-	appendToArchive = (function (filename) {
-		var appendStream, ok = true;
-
-		try {
-			appendStream = fs.createWriteStream(filename, { flags: 'a' });
-		} catch (exception) {
-			console.log(exception);
-		}
-
-		function write(data) {
-			ok = appendStream.write(data + '\n');
-			if (!ok) {
-				appendStream.once('drain', write);
-			}
-		}
-
-		return write;
-	})(appendToArchive);
 
 	
 	// Connection handler
@@ -82,10 +48,28 @@ module.exports = function (http, auth) {
 		var user = socket.request.user,
 			lastMessage = {};
 
+		// Set user's status to ONLINE
+		user.stat = USER_STATUS.online;
+
+		// Add the user to users[] to have global access to all users
+		users.push(user);
+
 		console.log(user.displayName + ' has connected');
+		socket.broadcast.emit('user_status', {
+			user: user.displayName,
+			connected: user.connected,
+			stat: user.stat,
+			verbose: true
+		});
 
         // Catch the user up
 		socket.emit('ketchup', messages);
+		socket.emit('who', users.map(function (el) {
+			return {
+				displayName: el.displayName,
+				stat: el.stat
+			};
+		}));
 
 		// Chat Message
 		socket.on('chat_message', function (msg) {
@@ -103,13 +87,15 @@ module.exports = function (http, auth) {
 		
 		// Disconnect
 		socket.on('disconnect', function () {
+			// Get rid of the user in the global array
+			users.removeUser(user);
+			console.log(users);
 			console.log(user.displayName + ' has disconnected');
-			io.emit('status', {
-				test1: 'soup',
-				test2: 42,
-				test3: function (a) {
-					return a*3;
-				}
+			io.emit('user_status', {
+				user: user.displayName,
+				connected: false,
+				stat: USER_STATUS.offline,
+				verbose: true
 			});
 		});
 	});

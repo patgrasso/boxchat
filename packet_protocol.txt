@@ -7,6 +7,7 @@ chat_message: Standard chat message
 	datetime: [global date&time]
 }
 
+
 chat_aux: Auxillary information for chatting, such as "user typing".
 	Can also specify a color for the message
 {
@@ -15,14 +16,19 @@ chat_aux: Auxillary information for chatting, such as "user typing".
 	message: [information]
 }
 
+
 user_status: Used for updating users' statuses, such as when a user
 	disconnects or connects (or even goes idle -- this idea needs
-	some thought before being implemented though *privacy concerns*)
+	some thought before being implemented though *privacy concerns*).
+	*verbose* - If true, the client should interpret this message as
+				news and report the status (log a message)
 {
 	user: user.displayName,
 	connected: true/false,
-	status: [one of USER_STATUS's members],
+	stat: [one of USER_STATUS's members],
+	verbose: true/false
 }
+
 
 ketchup: When a user logs in, they need the current session's messages
 	so that they know what everybody else is talking about. This is
@@ -33,3 +39,6 @@ ketchup: When a user logs in, they need the current session's messages
 [ {chat_message}, {chat_message}, {chat_message}, ... ]
 
 
+who: No message necessary client -> server. Returns an array of users
+	and their statuses
+[ { user: [name], stat: [UESR_STATUS type] }, ... ]
