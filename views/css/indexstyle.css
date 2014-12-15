@@ -1,0 +1,167 @@
+* {
+	font-family: sans-serif;
+}
+body {
+	margin:0;
+	padding:0;
+	border:0;			/* This removes the border around the viewport in old versions of IE */
+	width:100%;
+	background:#fff;
+	min-width:600px;		/* Minimum width of layout - remove line if not required */
+					/* The min-width property does not work in old versions of Internet Explorer */
+	font-size:90%;
+	height: 100%;
+}
+html {
+	height: 100%;
+}
+a {
+	color:#369;
+}
+a:hover {
+	color:#312F86;
+	background-color:#312F86;
+	text-decoration:none;
+}
+
+#userbox > header {
+	position: relative;
+	border-bottom: 2px solid #A04800;
+	display: block;
+	width:100%;
+	text-align: center;
+	background-color: #DE6500;
+	color: white;
+}
+
+#userbox > a[href="/logout"] {
+	position: absolute;
+	padding: 20px 0;
+	bottom: 0px;
+	width: 100%;
+	text-align: center;
+	text-decoration: none;
+	font-size: 20px;
+	color: white;
+	background-color: #FFB624;
+	border-top: 2px solid #A04800;
+}
+
+#userbox > a[href="/logout"]:hover {
+	background-color: #DE9400;
+}
+
+#userlist {
+	list-style-type: none;
+	padding-left: 0;
+	margin: 0;
+}
+
+#userlist > li {
+	border-bottom: 1px solid #A04800;
+	background-color: #FFA153;
+	font-weight: bold;
+	padding: 10px;
+}
+
+h1, h2, h3 {
+	padding: 10px;
+	margin: 0;
+}
+img {
+	margin:10px 0 5px;
+}
+
+
+/* column container */
+.colmask {
+	position: absolute;
+	display: table;
+	clear: both;
+	width: 100%;			/* width of whole page */
+	overflow: hidden;		/* This chops off any overhanging divs */
+	bottom: 0;
+	top: 0px;
+	height: 100%;
+}
+/* common column settings */
+section {
+	display: table-cell;
+	position: relative;
+	padding: 0px;
+	/*
+	border-style: solid;
+	border-width: 2px;
+	border-color: grey;
+	*/
+	bottom: 0;
+	height: 100%;
+	overflow: hidden;
+	
+}
+
+#userbox {
+	width: 20%;
+	vertical-align: top;
+	background-color: #FF8724;
+	border-right: 2px solid #A04800;
+}
+
+#messagebox {
+	width: 100%;
+	overflow: hidden;
+}
+
+#messages {
+	position: absolute;
+	top: 0;
+	left: 20px;
+	right: 20px;
+	bottom: 55px;
+	list-style-type: none;
+	padding: 0;
+	overflow: auto;
+}
+
+
+#messages > li {
+	font-size: 16px;
+}
+
+.messageUserName {
+	display: inline-block;
+	font-weight: bold;
+	margin-top: 10px;
+}
+
+.messageTime {
+	font-size: 10px;
+	color: lightgray;
+}
+
+#messages > li > p {
+	margin: 0;
+}
+
+#messageform {
+	position: absolute;
+	width: auto;
+	right: 20px;
+	left: 20px;
+	bottom: 20px;
+}
+
+#messageform > input {
+	width: 100%;
+	padding: 7px;
+}
+
+
+
+section:nth-of-type(3) {
+	display: none;
+}
+/*
+color palette from paletton.com:
+http://paletton.com/#uid=50u0u0krvyNfjNqlzEFw4rQ-Hk3
+*/

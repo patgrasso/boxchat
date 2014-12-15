@@ -1,34 +1,79 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<title>BoxChat Client</title>
-        <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+    <head>
+        <meta charset="utf-8" />
+		<title>BoxChat</title>
+        <script src="http://code.jquery.com/jquery-1.11.1.js"></script><style type="text/css"></style>
         <script src="/socket.io/socket.io.js"></script>
-		<script data-main="client/chat-client.js" src="client/require.js"></script>
-		<style>
-			#messages, #online_users {
-				list-style-type: none;
-				padding-left: 0;
-			}
-
-			#online_users {
-				color: #449d44;
-			}
-		</style>
+        <link rel="stylesheet" href="css/indexstyle.css" />
 	</head>
-	<body>
-		<div id="message-list-box">
-			<ul id="messages" style="list-style-type: none;">
-			</ul>
-            <form action="">
-                <input type="text" id="m" autocomplete="off" />
-                <button>Send</button>
-            </form>
-            <a href="/logout">Log Out</a>
-		</div>
-		<div id="users">
-			<ul id="online_users" style="list-style-type: none;">
-			</ul>
+	<body onload="goToBottom()">
+        <div class="colmask threecol">
+            <section id="userbox">
+                <header>
+        	        <h1>BoxChat</h1>
+                </header>
+                <ul id="userlist">
+                    <li>bluesledmaster</li>
+                    <li>Jordana</li>
+                    <li>test1</li>
+                </ul>
+                <a href="/logout">Log Out</a>
+            </section>
+            <section id="messagebox">
+                <!-- Column 2 start -->
+                <ul id="messages">
+                    <li>
+                        <span class="messageUserName">bluesledmaster</span>
+                        <span class="messageTime">12:42 PM</span>
+                        <p>Hello there</p>
+                    </li>
+                    <li>
+                        <p>Sup</p>
+                    </li>
+                    <li>
+                        <span class="messageUserName">Jordana</span>
+                        <span class="messageTime">12:43 PM</span>
+                        <p>Hey!</p>
+                    </li>
+                </ul>
+                <form id="messageform" onsubmit="return logDaForm(this)">
+                    <input type="text" name="content" id="m" autocomplete="off">
+                </form>
+                
+                <!-- Column 2 end -->
+            </section>
+            <section>
+                <!-- Column 3 start -->
+                <p>This is Column 3! Not sure what will be going here yet!</p>
+                <!-- Column 3 end -->
+            </section>
         </div>
-	</body>
+        <script src="/client-js/chat-client.js"></script>
+        <script>
+            function goToBottom(appendFunction) {
+                var messages = document.getElementById('messages');
+                messages.scrollTop = messages.scrollHeight - messages.clientHeight;
+            }
+            
+            function logDaForm(form) {
+                var messages = document.getElementById('messages'),
+                    isAtBottom = messages.scrollHeight - messages.clientHeight <= messages.scrollTop + 1,
+                    newMsg = document.createElement('li');
+                    
+                // Attach message to #messages
+                newMsg.innerText = form.content.value;
+                form.content.value = '';
+                messages.appendChild(newMsg);
+                
+                // Put scrollbar at bottom
+                if (isAtBottom) {
+                    messages.scrollTop = messages.scrollHeight - messages.clientHeight;
+                }
+                
+                // False for no-submit
+                return false;
+            }
+        </script>
+    </body>
 </html>
