@@ -4,16 +4,24 @@ var auth = require('./server/auth')(app);
 var passport = auth.passport;
 var socketChat = require('./server/socket-chat')(http, auth);
 
-var clientFiles = [
+var clientScripts = [
 		'/client/chat-client.js',
 		'/client/require.js',
-		'/client/binder.js'
+		'/client/binder.js',
+	];
+
+var clientCSS = [
+		'/css/indexstyle.css'
 	];
 
 
-// Allow GET for files in clientFiles
-app.use(clientFiles, function (req, res) {
+// Allow GET for files in clientScripts and clientCSS
+app.use(clientScripts, function (req, res) {
 	res.sendFile(__dirname + req.baseUrl);
+});
+
+app.use(clientCSS, function (req, res) {
+	res.sendFile(__dirname + '/views' + req.baseUrl);
 });
 
 

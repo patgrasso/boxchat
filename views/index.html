@@ -5,6 +5,7 @@
 		<title>BoxChat</title>
         <script src="http://code.jquery.com/jquery-1.11.1.js"></script><style type="text/css"></style>
         <script src="/socket.io/socket.io.js"></script>
+		<script data-main="client/chat-client.js" src="client/require.js"></script>
         <link rel="stylesheet" href="css/indexstyle.css" />
 	</head>
 	<body onload="goToBottom()">
@@ -49,7 +50,7 @@
                 <!-- Column 3 end -->
             </section>
         </div>
-        <script src="/client-js/chat-client.js"></script>
+        <script src="/client/chat-client.js"></script>
         <script>
             function goToBottom(appendFunction) {
                 var messages = document.getElementById('messages');
