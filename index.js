@@ -1,13 +1,13 @@
 var app = require('express')();
 var http = require('http').Server(app);
-var auth = require('./auth')(app);
+var auth = require('./server/auth')(app);
 var passport = auth.passport;
-var socketChat = require('./socket-chat')(http, auth);
+var socketChat = require('./server/socket-chat')(http, auth);
 
 var clientFiles = [
-		'/client-js/chat-client.js',
-		'/client-js/require.js',
-		'/client-js/binder.js'
+		'/client/chat-client.js',
+		'/client/require.js',
+		'/client/binder.js'
 	];
 
 
