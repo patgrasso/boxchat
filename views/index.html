@@ -1,9 +1,20 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>Socket.IO Chat Client</title>
+		<title>BoxChat Client</title>
         <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
         <script src="/socket.io/socket.io.js"></script>
+		<script data-main="client-js/chat-client.js" src="client-js/require.js"></script>
+		<style>
+			#messages, #online_users {
+				list-style-type: none;
+				padding-left: 0;
+			}
+
+			#online_users {
+				color: #449d44;
+			}
+		</style>
 	</head>
 	<body>
 		<div id="message-list-box">
@@ -19,6 +30,5 @@
 			<ul id="online_users" style="list-style-type: none;">
 			</ul>
         </div>
-        <script src="/client-js/chat-client.js"></script>
 	</body>
 </html>
