@@ -27,16 +27,16 @@ module.exports = function (filename) {
 	// Create a JSON array with the data from a message that can be stored
 	// in the archive file
 	function formatMessageToArchive(msg) {
-		return '["' + msg.from + '","' + msg.message + '","' + msg.datetime + '"]';
+		return '["' + msg.from + '","' + msg.content + '","' + msg.datetime + '"]';
 	}
 
 
 	// Creates an object from an an entry in the message archive
 	function createMessageFromArchive(line) {
 		var dataArr = JSON.parse(line);
-		(return {
+		return {
 			from: dataArr[0],
-			message: dataArr[1],
+			content: dataArr[1],
 			datetime: dataArr[2]
 		};
 	}
@@ -60,7 +60,11 @@ module.exports = function (filename) {
 			}
 		}
 
-		return write;
+		function archiveMessage(msg) {
+			write(formatMessageToArchive(msg));
+		}
+
+		return archiveMessage;
 	};
 
 	

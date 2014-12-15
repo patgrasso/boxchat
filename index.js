@@ -5,7 +5,9 @@ var passport = auth.passport;
 var socketChat = require('./socket-chat')(http, auth);
 
 var clientFiles = [
-		'/client-js/chat-client.js'
+		'/client-js/chat-client.js',
+		'/client-js/require.js',
+		'/client-js/binder.js'
 	];
 
 
