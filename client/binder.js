@@ -1,84 +1,87 @@
 /**
- *	Name: binder.js
- *	Author: Patrick Grasso
- *	Description: This module provides functions that allow data bindings
- *		between javascript objects and DOM elements so that whenever the
- *		javascript object changes, the DOM element representing that
- *		object will update, eliminating the need to constantly remember
- *		to update the UI after every change to the object.
+ *  Name: binder.js
+ *  Author: Patrick Grasso
+ *  Description: This module provides functions that allow data bindings
+ *      between javascript objects and DOM elements so that whenever the
+ *      javascript object changes, the DOM element representing that
+ *      object will update, eliminating the need to constantly remember
+ *      to update the UI after every change to the object.
  *
- *		~! Right now this only supports a bind between []'s and <ul>'s !~
- *	Dependencies:
- *		Object.observe() - Watches the state of and object and calls the
- *			callback function with the object's changes whenever it does
- *			change.
- *			!!! This is only supported in chrome, so consider just switching
- *				to Knockout.js !!!		
+ *      ~! Right now this only supports a bind between []'s and <ul>'s !~
+ *  Dependencies:
+ *      Object.observe() - Watches the state of and object and calls the
+ *          callback function with the object's changes whenever it does
+ *          change.
+ *          !!! This is only supported in chrome, so consider just switching
+ *              to Knockout.js !!!      
  */
 
+/*jslint browser: true*/
+/*global define*/
 
 define(function () {
-	var attachments = [];
+    'use strict';
+    var attachments = [];
 
-	/**
-	 *	BinderElement (constructor) - A wrapper object for DOM elements
-	 *		with the ability to modify their contents quickly
-	 */
-	function BinderElement(id) {
-		this.element = document.getElementById(id);
-		
-		// For <ul>s
-		function empty() {
-			this.element.innerHTML = '';
-		}
+    /**
+     *  BinderElement (constructor) - A wrapper object for DOM elements
+     *      with the ability to modify their contents quickly
+     */
+    function BinderElement(id) {
+        this.element = document.getElementById(id);
 
-		function append(text) {
-			var textNode = document.createTextNode(text),
-				newListItem = document.createElement('li');
-			newListItem.appendChild(textNode);
-			this.element.appendChild(newListItem);
-		}
+        // For <ul>s
+        function empty() {
+            this.element.innerHTML = '';
+        }
 
-		function replaceAll(list, convertFunc) {
-			var li,
-				ul = document.createElement('ul');
+        function append(text) {
+            var textNode = document.createTextNode(text),
+                newListItem = document.createElement('li');
+            newListItem.appendChild(textNode);
+            this.element.appendChild(newListItem);
+        }
 
-			if (convertFunc !== undefined && arguments.length > 1) {
-				list = list.map(convertFunc);
-			}
+        function replaceAll(list, convertFunc) {
+            var li,
+                ul = document.createElement('ul');
 
-			list.forEach(function (textItem) {
-				li = document.createElement('li');
-				li.innerText = textItem;
-				ul.appendChild(li);
-			});
+            if (convertFunc !== undefined && arguments.length > 1) {
+                list = list.map(convertFunc);
+            }
 
-			this.element.innerHTML = ul.innerHTML;
-		}
+            list.forEach(function (textItem) {
+                li = document.createElement('li');
+                li.innerText = textItem;
+                ul.appendChild(li);
+            });
 
-		this.replaceAll = replaceAll;
-	}
+            this.element.innerHTML = ul.innerHTML;
+        }
+
+        this.replaceAll = replaceAll;
+    }
 
 
-	// Given an object (right now only working with arrays and <ul>s),
-	// this sets up an observer on that object and updates the <ul>
-	// specified by elementId. convertFunc, if specified, is a map
-	// function that is called on each item in obj, the return value
-	// of which will become that <li>s innerText.
-	function attach(obj, elementId, convertFunc) {
-		var binderElem = new BinderElement(elementId);
+    // Given an object (right now only working with arrays and <ul>s),
+    // this sets up an observer on that object and updates the <ul>
+    // specified by elementId. convertFunc, if specified, is a map
+    // function that is called on each item in obj, the return value
+    // of which will become that <li>s innerText.
+    function attach(obj, elementId, convertFunc) {
+        var binderElem = new BinderElement(elementId);
 
-		Object.observe(obj, function (changes) {
-			// Add dynamic functionality to determine if insert() would be
-			// better here rather than replaceAll()
-			binderElem.replaceAll(changes[0].object, convertFunc);
-		});
+        Object.observe(obj, function (changes) {
+            // Add dynamic functionality to determine if insert() would be
+            // better here rather than replaceAll()
+            binderElem.replaceAll(changes[0].object, convertFunc);
+        });
 
-		attachments.push(binderElem);
-	}
+        attachments.push(binderElem);
+    }
 
-	return {
-		attach: attach
-	};
+    return {
+        attach: attach
+    };
 
 });
