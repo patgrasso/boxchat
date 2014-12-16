@@ -1,10 +1,10 @@
-require(['binder'], function (binder) {
+require(['binder', 'messagelist'], function (binder, messageList) {
 	var socket = io();
 	var users = [];
 	
 	// Bind users[] to #online_users (<ul>) so that any changes to users[] will
 	// reflect on the page immediately
-	binder.attach(users, 'online_users', function (user) {
+	binder.attach(users, 'userlist', function (user) {
 		return user.displayName; // Return the user's name to be displayed in the <li>
 	});
 	
@@ -19,34 +19,25 @@ require(['binder'], function (binder) {
 		users.splice(i, 1);
 	};
 
-	$('form').submit(function () {
+	// Chat form submission function
+	$('#messageform').submit(function (e) {
+		e.preventDefault();
+		e.stopImmediatePropagation();
 		socket.emit('chat_message', $('#m').val());
 		$('#m').val('');
-		return false;
+		return false; // Don't submit!
 	});
 
-	// Adds a message to the <ul> we have goin
-	function addMessage(msg, color, custom) {
-		if (custom === true) {
-			$('#messages').append($('<li>').text(msg).css('color', color));
-		} else {
-			$('#messages').append($('<li>').text(msg.from + ' : ' + msg.content).css('color', color));
-		}
-	}
+	// Initialize message list handler with id of <ul> containing all the messages
+	messageList.init('messages');
 
-	function updateOnlineUsers() {
-		$('#online_users').empty();
-		Object.keys(users).map(function (uid) {
-			$('#online_users').append($('<li>').text(users[uid].displayName).css('color', '#449d44'));
-		});
-	}
 
 
 	// ~~ PACKET HANDLERS ~~ //
 
 	// This handler catches the client up with stored messages from the server
 	socket.on('ketchup', function (messages) {
-		messages.forEach(addMessage);
+		messages.forEach(messageList.addMessage);
 	});
 
 
@@ -60,7 +51,7 @@ require(['binder'], function (binder) {
 	
 	// Receives a chat message object with 'displayName', 'content', and 'datetime'
 	socket.on('chat_message', function (msg) {
-		addMessage(msg);
+		messageList.addMessage(msg);
 	});
 
 

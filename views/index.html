@@ -11,38 +11,29 @@
 	<body onload="goToBottom()">
         <div class="colmask threecol">
             <section id="userbox">
+				<!-- Users Box Start -->
                 <header>
         	        <h1>BoxChat</h1>
                 </header>
                 <ul id="userlist">
                     <li>bluesledmaster</li>
-                    <li>Jordana</li>
-                    <li>test1</li>
                 </ul>
                 <a href="/logout">Log Out</a>
+				<!-- Users Box End -->
             </section>
             <section id="messagebox">
-                <!-- Column 2 start -->
+                <!-- Message Box Start -->
                 <ul id="messages">
                     <li>
                         <span class="messageUserName">bluesledmaster</span>
                         <span class="messageTime">12:42 PM</span>
                         <p>Hello there</p>
                     </li>
-                    <li>
-                        <p>Sup</p>
-                    </li>
-                    <li>
-                        <span class="messageUserName">Jordana</span>
-                        <span class="messageTime">12:43 PM</span>
-                        <p>Hey!</p>
-                    </li>
                 </ul>
-                <form id="messageform" onsubmit="return logDaForm(this)">
+                <form id="messageform" action="">
                     <input type="text" name="content" id="m" autocomplete="off">
                 </form>
-                
-                <!-- Column 2 end -->
+                <!-- Message Box End -->
             </section>
             <section>
                 <!-- Column 3 start -->
@@ -50,7 +41,6 @@
                 <!-- Column 3 end -->
             </section>
         </div>
-        <script src="/client/chat-client.js"></script>
         <script>
             function goToBottom(appendFunction) {
                 var messages = document.getElementById('messages');

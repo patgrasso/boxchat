@@ -8,6 +8,7 @@ var clientScripts = [
 		'/client/chat-client.js',
 		'/client/require.js',
 		'/client/binder.js',
+		'/client/messagelist.js'
 	];
 
 var clientCSS = [

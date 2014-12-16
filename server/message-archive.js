@@ -27,7 +27,8 @@ module.exports = function (filename) {
 	// Create a JSON array with the data from a message that can be stored
 	// in the archive file
 	function formatMessageToArchive(msg) {
-		return '["' + msg.from + '","' + msg.content + '","' + msg.datetime + '"]';
+		return JSON.stringify([msg.from, msg.content, msg.datetime]);
+		//return '["' + msg.from + '","' + msg.content + '","' + msg.datetime + '"]';
 	}
 
 

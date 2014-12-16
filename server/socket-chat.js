@@ -31,7 +31,8 @@ module.exports = function (http, auth) {
 	// Connection handler
 	io.on('connection', function (socket) {
 		var user = socket.request.user,
-			lastMessage = {};
+			lastMessage = {},
+			i;
 
 		// Set user's status to ONLINE
 		user.stat = USER_STATUS.online;
@@ -40,8 +41,14 @@ module.exports = function (http, auth) {
 		console.log(user.displayName + ' has connected');
 		socket.broadcast.emit('user_status', users.toStatusUser(user, 'online'));
 
-        // Catch the user up
-		socket.emit('ketchup', archive.messages);
+        // Catch the user up with messages and active users
+		for (i = 40; i < archive.messages.length; i += 40) {
+			socket.emit('ketchup', archive.messages.slice(i - 40, i));
+		}
+		if (i >= archive.messages.length) {
+			socket.emit('ketchup', archive.messages.slice(i - 40, i));
+		}
+
 		socket.emit('who', users.getAll(['displayName', 'stat']));
 
 
