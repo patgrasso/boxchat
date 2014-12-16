@@ -136,7 +136,7 @@ section {
 
 .messageTime {
 	font-size: 10px;
-	color: lightgray;
+	color: gray;
 }
 
 #messages > li > p {
