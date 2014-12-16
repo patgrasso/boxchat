@@ -1,3 +1,22 @@
+/**
+ *	Name: auth.js
+ *	Author: Patrick Grasso
+ *	Description: This is the authorization module for boxchat. It can access
+ *		the MongoDB storage for boxchat (which contains user information),
+ *		authorize users, maintain user sessions, and utilize bcrypt to store
+ *		sensitive information (passwords)
+ *	Dependencies:
+ *		bodyParser: See package.json
+ *		passport: See package.json
+ *		LocalStrategy: See package.json
+ *		mongoose: See package.json
+ *		session: See package.json
+ *		cookieParser: See package.json
+ *		MongoStore: See package.json
+ *		bcrypt: See package.json
+ */
+
+
 // Initialize modules
 var bodyParser = require('body-parser');
 var passport = require('passport');

@@ -1,6 +1,21 @@
 /**
- *	binder.js - Contains methods to bind data to the DOM!
+ *	Name: binder.js
+ *	Author: Patrick Grasso
+ *	Description: This module provides functions that allow data bindings
+ *		between javascript objects and DOM elements so that whenever the
+ *		javascript object changes, the DOM element representing that
+ *		object will update, eliminating the need to constantly remember
+ *		to update the UI after every change to the object.
+ *
+ *		~! Right now this only supports a bind between []'s and <ul>'s !~
+ *	Dependencies:
+ *		Object.observe() - Watches the state of and object and calls the
+ *			callback function with the object's changes whenever it does
+ *			change.
+ *			!!! This is only supported in chrome, so consider just switching
+ *				to Knockout.js !!!		
  */
+
 
 define(function () {
 	var attachments = [];

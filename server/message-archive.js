@@ -1,3 +1,22 @@
+/**
+ *	Name: message-archive.js
+ *	Author: Patrick Grasso
+ *	Description: message-archive.js controls the archive files for stored
+ *		messages (and other information). On server startup (when the module's
+ *		main function is called), all messages are loaded from the archive file
+ *		into a list. Any time a user connects, that list is sent to them so that
+ *		it may appear as if they never left the chatroom! Every message received
+ *		by the server gets stored in the archive file.
+ *
+ *		Also, writing to the archive file is done cleverly in such a way that if
+ *		two messages are received at once (which would ordinarily cause one of
+ *		them to fail in writing to the file), both will be written, one after the
+ *		other.
+ *	Dependencies:
+ *		fs - Node.js's filesystem module
+ */
+
+
 module.exports = function (filename) {
 	var fs = require('fs');
 	var archiveOutputStream;

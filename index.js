@@ -1,3 +1,21 @@
+/**
+ *	Name: index.js
+ *	Author: Patrick Grasso
+ *	Description: This is the primary module run on server startup
+ *		(e.g. $ node index.js). It contains routing information for different
+ *		urls and request methods. This file should be kept primarily to routing
+ *		and should not be cluttered with other functionalities that should be
+ *		placed in other modules.
+ *	Dependencies:
+ *		app - See package.json
+ *		http - See package.json
+ *		auth - Authorization module which contains methods and information for
+ *			accessing the Mongo DataBase, authorizing users, and managing sessions
+ *		socketChat - socket.io handler module with websocket functionalities for
+ * 			the actual chat application
+ */
+
+
 var app = require('express')();
 var http = require('http').Server(app);
 var auth = require('./server/auth')(app);

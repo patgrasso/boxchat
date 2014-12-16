@@ -1,3 +1,13 @@
+/**
+ *	Name: messagelist.js
+ *	Author: Patrick Grasso
+ *	Description: This module manages everything that goes into the message box
+ *		(that big <ul>) and how it goes in. This simplifies adding messages
+ *		to the list and providing functionality to the message box.
+ *	Dependencies:
+ *		NONE
+ */
+
 define(function () {
 	var listObj,
 		lastMessageTime,

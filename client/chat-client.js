@@ -1,3 +1,18 @@
+/**
+ *	Name: chat-client.js
+ *	Author: Patrick Grasso
+ *	Description: Entry-point for require.js / socket.io handler for the client.
+ *		The socket.io portion for messages from the server and abides by standards
+ *		in packet_protocol.txt. This module also manages connected user profiles
+ *		and their statuses (as reported by the server).
+ *	Dependencies:
+ *		binder - Javascript Object - DOM Element data binding utility
+ *		messageList - Manager for the big message box <ul> on the page
+ *		socket - socket.io object that allows the client to communicate via
+ *			websockets with the server
+ */
+
+
 require(['binder', 'messagelist'], function (binder, messageList) {
 	var socket = io();
 	var users = [];

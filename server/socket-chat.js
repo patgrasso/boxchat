@@ -1,3 +1,19 @@
+/**
+ *	Name: socket-chat.js
+ *	Author: Patrick Grasso
+ *	Description: socket-chat handles all of the socket.io implementation.
+ *		All socket.io messages received from each client are archived and
+ *		sent outward to every client. The protocol for the types of
+ *		messages recognized by this module and the corresponding client
+ *		socket.io module is spelled out in packet_protocol.txt in the
+ *		project's home folder.
+ *	Dependencies:
+ *		http - The require('http').Server object created in index.js
+ *		auth - The authorization object initialized in index.js (but
+ *			comes from the auth.js module)
+ */
+
+
 module.exports = function (http, auth) {
 
 	// Initialize modules
