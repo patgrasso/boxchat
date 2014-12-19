@@ -12,9 +12,9 @@
 
 /*jslint node: true*/
 
-module.exports = function (io) {
+module.exports = function (io, auth) {
     'use strict';
-    // Get all active users and their properties
+    // Return an array of objects, each containing the properties specified
     function getAll(propertyList) {
         var clients = io.eio.clients,
             userObjects = [],
@@ -33,6 +33,8 @@ module.exports = function (io) {
         return userObjects;
     }
 
+
+    // Creates a user status object for relaying a user's status to others
     function toStatusUser(user, stat, verbose) {
         return {
             id: user._id,
@@ -42,8 +44,23 @@ module.exports = function (io) {
         };
     }
 
+
+    // Disables chat functionality for a certain user. The admin's user
+    // object must be passed as the first parameter
+    function disableChat(adminUser, targetUser) {
+        if (adminUser.permissions.admin === true) {
+            targetUser.permissions.chat = false;
+
+            return auth.update(targetUser, {
+                permissions: targetUser.permissions
+            });
+        }
+        return false;
+    }
+
     return {
         getAll: getAll,
-        toStatusUser: toStatusUser
+        toStatusUser: toStatusUser,
+        disableChat: disableChat
     };
 };

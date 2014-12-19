@@ -21,7 +21,7 @@ module.exports = function (http, auth) {
     var io = require('socket.io')(http),
         passportSocketIO = require('passport.socketio'),
         archive = require('./message-archive')('message_archive.dat'),
-        users = require('./users')(io),
+        users = require('./users')(io, auth),
 
         // Global protocol objects
         CHAT_AUX_TYPE = {
@@ -73,16 +73,18 @@ module.exports = function (http, auth) {
 
         // Chat Message
         socket.on('chat_message', function (msg) {
-            lastMessage = {
-                from: user.displayName,
-                content: msg,
-                datetime: new Date().toGMTString()
-            };
+            if (user.permissions.chat === true) {
+                lastMessage = {
+                    from: user.displayName,
+                    content: msg,
+                    datetime: new Date().toGMTString()
+                };
 
-            console.log(lastMessage);
-            archive.messages.push(lastMessage);
-            archive.write(lastMessage);
-            io.emit('chat_message', lastMessage);
+                console.log(lastMessage);
+                archive.messages.push(lastMessage);
+                archive.write(lastMessage);
+                io.emit('chat_message', lastMessage);
+            }
         });
 
 

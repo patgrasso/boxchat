@@ -34,17 +34,30 @@ var bcrypt = require('bcrypt');
 // MongoDB
 mongoose.connect('mongodb://localhost/MyDatabase');
 
+// User Information
 var Schema = mongoose.Schema;
 var UserDetail = new Schema({
         username: String,
         password: String,
         salt: String,
-        displayName: String
+        displayName: String,
+        permissions: {
+            admin: Boolean,
+            chat: Boolean
+        },
+        rooms: Array
     }, {
         collection: 'userInfo'
     });
 var UserDetails = mongoose.model('userInfo', UserDetail);
 
+// Room Information
+var RoomDetail = new Schema({
+        name: String
+    }, {
+        collection: 'roomInfo'
+    });
+var RoomDetails = mongoose.model('roomInfo', RoomDetail);
 
 // Connect-Mongo (session storage)
 var sessionStore = new MongoStore({mongoose_connection: mongoose.connection});
@@ -139,13 +152,38 @@ function register(req, res) {
             username: username,
             password: hash,
             displayName: displayName,
-            salt: salt
+            salt: salt,
+            permissons: {
+                admin: false,
+                chat: true
+            }
         }, function (err, user) {
             console.log(err);
             console.log(user);
             res.redirect('/login');
         });
     });
+}
+
+
+function update(username, options) {
+    'use strict';
+    var allGood = false;
+
+    // Allow a string or user object to be passed in
+    if (typeof username !== 'string' && username.username !== undefined) {
+        username = username.username;
+    }
+
+    UserDetails.update({
+        'username': username
+    }, {
+        '$set': options
+    }, function (err) {
+        allGood = !err;
+    });
+
+    return allGood;
 }
 
 
@@ -173,6 +211,7 @@ module.exports = function (app) {
         bodyParser: bodyParser,
         cookieParser: cookieParser,
         login: login,
-        register: register
+        register: register,
+        update: update
     };
 };

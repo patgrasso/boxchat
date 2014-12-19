@@ -14,6 +14,7 @@
 
 /*jslint browser: true*/
 /*global $, io*/
+
 require(['binder', 'messagelist'], function (binder, messageList) {
     'use strict';
     var socket = io(),
