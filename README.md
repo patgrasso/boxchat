@@ -1,11 +1,12 @@
 boxchat
 =======
 
-A web-based socket.io-powered chat client with an authentication system.
+Boxchat is a web-based socket.io-powered chat client with an authentication system.
 
 Made with <a href="http://nodejs.org/">node.js</a> and <a href="http://socket.io">socket.io</a>.
 
 <h3>Modules</h3>
+_See packages.json for updated information on included modules_
 <ol>
   <li>express: ~4.10.2</li>
   <li>express-session: ~1.9.3</li>
