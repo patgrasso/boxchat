@@ -18,7 +18,8 @@
 require(['binder', 'messagelist'], function (binder, messageList) {
     'use strict';
     var socket = io(),
-        users = [];
+        users = [],
+        myProfile;
 
     // Bind users[] to #online_users (<ul>) so that any changes to users[] will
     // reflect on the page immediately
