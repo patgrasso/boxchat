@@ -41,7 +41,10 @@ require(['binder', 'messagelist'], function (binder, messageList) {
     $('#messageform').submit(function (e) {
         e.preventDefault();
         e.stopImmediatePropagation();
-        socket.emit('chat_message', $('#m').val());
+        socket.emit('chat_message', {
+            content: $('#m').val(),
+            room: 'general'             // FIXME: HARD-CODED ROOM!!!
+        });
         $('#m').val('');
         return false; // Don't submit!
     });

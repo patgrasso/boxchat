@@ -13,7 +13,7 @@
  *          comes from the auth.js module)
  */
 
-/*jslint node: true*/
+/*jslint node: true, regexp: true*/
 
 module.exports = function (http, auth) {
     'use strict';
@@ -22,6 +22,7 @@ module.exports = function (http, auth) {
         passportSocketIO = require('passport.socketio'),
         archive = require('./message-archive')('message_archive.dat'),
         users = require('./users')(io, auth),
+        rooms = require('./rooms')(io, auth),
 
         // Global protocol objects
         CHAT_AUX_TYPE = {
@@ -45,14 +46,28 @@ module.exports = function (http, auth) {
     }));
 
 
+    function attachMethodsToSocket(socket) {
+        rooms.bind(socket);
+    }
+
+
+
     // Connection handler
     io.on('connection', function (socket) {
         var user = socket.request.user,
             lastMessage = {},
             i;
 
+        // Bind methods to our socket
+        attachMethodsToSocket(socket);
+
         // Set user's status to ONLINE
         user.stat = USER_STATUS.online;
+
+        // Join all the rooms this member is a part of
+        user.rooms.forEach(function (room) {
+            socket.join(room);
+        });
 
         // Let everybody know that user has connected
         console.log(user.displayName + ' has connected');
@@ -73,17 +88,33 @@ module.exports = function (http, auth) {
 
         // Chat Message
         socket.on('chat_message', function (msg) {
+            var join = /^\/join (.*)/,      // Temporary - replace with parser
+                leave = /^\/leave (.*)/;    // Temporary - replace with parser
             if (user.permissions.chat === true) {
                 lastMessage = {
                     from: user.displayName,
-                    content: msg,
-                    datetime: new Date().toGMTString()
+                    content: msg.content,
+                    datetime: new Date().toGMTString(),
+                    room: msg.room
                 };
 
-                console.log(lastMessage);
-                archive.messages.push(lastMessage);
-                archive.write(lastMessage);
-                io.emit('chat_message', lastMessage);
+                // Temporary - same as above
+                join = msg.content.match(join);
+                leave = msg.content.match(leave);
+                if (join !== null && join[1] !== '') {
+                    socket.joinRoom(join[1], function (err) {
+                        console.log(user.rooms);
+                    });
+                } else if (leave !== null && leave[1] !== '') {
+                    socket.leaveRoom(leave[1], function (err) {
+                        console.log(user.rooms);
+                    });
+                } else {
+                    console.log(lastMessage);
+                    archive.messages.push(lastMessage);
+                    archive.write(lastMessage);
+                    io.to(lastMessage.room).emit('chat_message', lastMessage);
+                }
             }
         });
 
