@@ -32,7 +32,7 @@ var bcrypt = require('bcrypt');
 
 
 // MongoDB
-mongoose.connect('mongodb://localhost/MyDatabase');
+mongoose.connect('mongodb://localhost/BoxChatDB');
 
 // User Information
 var Schema = mongoose.Schema;

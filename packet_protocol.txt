@@ -3,7 +3,7 @@
 chat_message: Standard chat message
 {
 	from: user.displayName,
-	message: [string with message (check for max length)],
+	content: [string with message (check for max length)],
 	datetime: [global date&time]
 }
 
@@ -24,7 +24,6 @@ user_status: Used for updating users' statuses, such as when a user
 				news and report the status (log a message)
 {
 	user: user.displayName,
-	connected: true/false,
 	stat: [one of USER_STATUS's members],
 	verbose: true/false
 }
@@ -41,4 +40,4 @@ ketchup: When a user logs in, they need the current session's messages
 
 who: No message necessary client -> server. Returns an array of users
 	and their statuses
-[ { user: [name], stat: [UESR_STATUS type] }, ... ]
+[ { user: [name], stat: [USER_STATUS type] }, ... ]

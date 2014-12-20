@@ -15,7 +15,7 @@
 /*jslint browser: true*/
 /*global $, io*/
 
-require(['binder', 'messagelist'], function (binder, messageList) {
+require(['binder', 'messagelist', 'notifications'], function (binder, messageList, notifications) {
     'use strict';
     var socket = io(),
         users = [];
@@ -49,6 +49,9 @@ require(['binder', 'messagelist'], function (binder, messageList) {
     // Initialize message list handler with id of <ul> containing all the messages
     messageList.init('messages');
 
+    // Initialize notifications
+    notifications.init();
+
 
 
     // ~~ PACKET HANDLERS ~~ //
@@ -77,6 +80,7 @@ require(['binder', 'messagelist'], function (binder, messageList) {
     // Receives a chat message object with 'displayName', 'content', and 'datetime'
     socket.on('chat_message', function (msg) {
         messageList.addMessage(msg);
+        notifications.push(msg);
     });
 
 
