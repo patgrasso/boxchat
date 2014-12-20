@@ -18,8 +18,8 @@
 require(['binder', 'messagelist'], function (binder, messageList) {
     'use strict';
     var socket = io(),
-        users = [],
-        myProfile;
+        users = {},
+        self;
 
     // Bind users[] to #online_users (<ul>) so that any changes to users[] will
     // reflect on the page immediately
@@ -69,11 +69,11 @@ require(['binder', 'messagelist'], function (binder, messageList) {
 
     // userArr contains user objects for every active in the room
     socket.on('who', function (userArr) {
-        while (users.length) {
-            users.pop();
-        }
+        Object.keys(users).forEach(function (username) {
+            delete users[username];
+        });
         userArr.forEach(function (user) {
-            users.push(user);
+            users[user.displayName] = user;
         });
     });
 
@@ -86,11 +86,20 @@ require(['binder', 'messagelist'], function (binder, messageList) {
 
     // Contains status information on a user in property 'stat'. See the protocol
     // document for more information on what this might contain
-    socket.on('user_status', function (obj) {
-        if (obj.stat === 'online') {
-            users.push(obj);
+    socket.on('user_status', function (user) {
+        if (user.stat === 'offline') {
+            delete users[user.displayName];
         } else {
-            users.removeUser(obj);
+            users[user.displayName] = user;
         }
+    });
+
+
+    // Gets own profile data from the server
+    socket.on('my_profile', function (user) {
+        self = user;
+        user.rooms.forEach(function (roomName) {
+            messageList.addRoom(roomName);
+        });
     });
 });

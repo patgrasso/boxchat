@@ -74,16 +74,16 @@ module.exports = function (http, auth) {
         socket.broadcast.emit('user_status', users.toStatusUser(user, 'online'));
 
         // Catch the user up with messages and active users
-        socket.emit('ketchup', 'begin');
+        socket.emit('who', users.getAll(['displayName', 'stat']));
+        socket.emit('my_profile', user);
 
+        socket.emit('ketchup', 'begin');
         for (i = 40; i < archive.messages.length; i += 40) {
             socket.emit('ketchup', archive.messages.slice(i - 40, i));
         }
         if (i >= archive.messages.length) {
             socket.emit('ketchup', archive.messages.slice(i - 40, i));
         }
-
-        socket.emit('who', users.getAll(['displayName', 'stat']));
 
 
         // Chat Message
