@@ -31,7 +31,8 @@ module.exports = function (filename) {
         return {
             from: dataArr[0],
             content: dataArr[1],
-            datetime: dataArr[2]
+            datetime: dataArr[2],
+            room: dataArr[3] || 'general'
         };
     }
 
@@ -59,7 +60,7 @@ module.exports = function (filename) {
     // Create a JSON array with the data from a message that can be stored
     // in the archive file
     function formatMessageToArchive(msg) {
-        return JSON.stringify([msg.from, msg.content, msg.datetime]);
+        return JSON.stringify([msg.from, msg.content, msg.datetime, msg.room]);
         //return '["' + msg.from + '","' + msg.content + '","' + msg.datetime + '"]';
     }
 

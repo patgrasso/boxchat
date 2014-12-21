@@ -19,10 +19,11 @@ define(function () {
 
     // Class for handling a room's messages
     // TODO: More documentation here
-    function RoomMessageList() {
+    function createRoomMessageList() {
         var listObj = document.createElement('ul'),
             lastMessageTime,
-            lastMessageOwner;
+            lastMessageOwner,
+            active = false;
 
         // Creates a new message entry for the message list and returns the
         // li to be attached to the list
@@ -59,7 +60,13 @@ define(function () {
 
         // Adds a message to the <ul> we have goin
         function addMessage(msgObj) {
-            var isAtBottom = listObj.scrollHeight - listObj.clientHeight <= listObj.scrollTop + 1;
+            var isAtBottom;
+
+            if (listObj === undefined) {
+                listObj = document.createElement('ul');
+            }
+
+            isAtBottom = listObj.scrollHeight - listObj.clientHeight <= listObj.scrollTop + 1;
 
             listObj.appendChild(createNewEntry(msgObj));
 
@@ -77,36 +84,71 @@ define(function () {
 
         // Set a <ul>'s innerHTML to this room list's innerHTML
         function applyTo(listObjectId) {
-            document.getElementById(listObjectId).innerHTML = listObj.innerHTML;
+            if (listObj !== undefined) {
+                document.getElementById(listObjectId).innerHTML = listObj.innerHTML;
+            }
+            listObj = document.getElementById(listObjectId);
+            active = true;
         }
 
-        this.addMessage = addMessage;
-        this.clearMessages = clearMessages;
-        this.applyTo = applyTo;
+
+        // Set the listObj to a new <ul> and copy over the data
+        function unApply() {
+            var newListObj = document.createElement('ul');
+            newListObj.innerHTML = listObj.innerHTML;
+            listObj = newListObj;
+            active = false;
+        }
+
+
+        function isActive() {
+            return active;
+        }
+
+
+        return {
+            addMessage: addMessage,
+            clearMessages: clearMessages,
+            applyTo: applyTo,
+            unApply: unApply,
+            isActive: isActive
+        };
+
     }
 
 
     // Adds a room to the rooms object
     function addRoom(roomName) {
-        rooms[roomName] = new RoomMessageList();
+        if (rooms[roomName] === undefined) {
+            rooms[roomName] = createRoomMessageList();
+        }
     }
 
 
     // Initializes the module
     function init(listObjectId) {
-        ulid = listObjectId;
         rooms = {};
+        ulid = listObjectId;
     }
 
 
     // Adds a message to the appropriate room
     function addMessage(msgObj) {
+        if (Object.keys(rooms).length === 0) {
+            return false;
+        }
         rooms[msgObj.room].addMessage(msgObj);
+        return true;
     }
 
 
     // Switch the message list content to the specific room's content
     function switchToRoom(roomName) {
+        Object.keys(rooms).forEach(function (room) {
+            if (rooms[room].isActive()) {
+                rooms[room].unApply();
+            }
+        });
         rooms[roomName].applyTo(ulid);
         currentRoom = roomName;
     }
@@ -114,6 +156,7 @@ define(function () {
 
     // Clear all the msesages in a room
     function clearMessages(roomName) {
+        roomName = roomName || currentRoom;
         rooms[roomName].clearMessages();
     }
 

@@ -19,24 +19,15 @@ require(['binder', 'messagelist'], function (binder, messageList) {
     'use strict';
     var socket = io(),
         users = {},
+        currentRoom,
         self;
 
     // Bind users[] to #online_users (<ul>) so that any changes to users[] will
     // reflect on the page immediately
     binder.attach(users, 'userlist', function (user) {
-        return user.displayName; // Return the user's name to be displayed in the <li>
+        return user; // Return the user's name to be displayed in the <li>
     });
 
-    // Attach method to remove active users
-    users.removeUser = function (user) {
-        var i = 0;
-
-        while (i < users.length && users[i].displayName !== user.displayName) {
-            i += 1;
-        }
-
-        users.splice(i, 1);
-    };
 
     // Chat form submission function
     $('#messageform').submit(function (e) {
@@ -44,14 +35,25 @@ require(['binder', 'messagelist'], function (binder, messageList) {
         e.stopImmediatePropagation();
         socket.emit('chat_message', {
             content: $('#m').val(),
-            room: 'general'             // FIXME: HARD-CODED ROOM!!!
+            room: currentRoom             // FIXME: HARD-CODED ROOM!!!
         });
         $('#m').val('');
         return false; // Don't submit!
     });
 
+
+    // Change room form submission function
+    $('#switchroom').submit(function (e) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        messageList.switchToRoom($('#r').val());
+        currentRoom = $('#r').val();
+        $('#r').val('');
+        return false;
+    });
+
     // Initialize message list handler with id of <ul> containing all the messages
-    messageList.init('messages');
+    messageList.init('messages', 'general');
 
 
 
@@ -74,6 +76,9 @@ require(['binder', 'messagelist'], function (binder, messageList) {
         });
         userArr.forEach(function (user) {
             users[user.displayName] = user;
+            user.rooms.forEach(function (roomName) {
+                messageList.addRoom(roomName);          // FIXME SUPER SUPER SUPER BAD TEMPORARY
+            });
         });
     });
 
@@ -100,6 +105,8 @@ require(['binder', 'messagelist'], function (binder, messageList) {
         self = user;
         user.rooms.forEach(function (roomName) {
             messageList.addRoom(roomName);
+            messageList.switchToRoom('general');
+            currentRoom = 'general';
         });
     });
 });

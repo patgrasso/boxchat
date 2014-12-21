@@ -74,7 +74,7 @@ module.exports = function (http, auth) {
         socket.broadcast.emit('user_status', users.toStatusUser(user, 'online'));
 
         // Catch the user up with messages and active users
-        socket.emit('who', users.getAll(['displayName', 'stat']));
+        socket.emit('who', users.getAll(['displayName', 'stat', 'rooms'])); // FIXME 'rooms' TEMPORARY
         socket.emit('my_profile', user);
 
         socket.emit('ketchup', 'begin');
@@ -105,10 +105,12 @@ module.exports = function (http, auth) {
                     socket.joinRoom(join[1], function (err) {
                         console.log(user.rooms);
                     });
+                    socket.emit('my_profile', user);
                 } else if (leave !== null && leave[1] !== '') {
                     socket.leaveRoom(leave[1], function (err) {
                         console.log(user.rooms);
                     });
+                    socket.emit('my_profile', user);
                 } else {
                     console.log(lastMessage);
                     archive.messages.push(lastMessage);
