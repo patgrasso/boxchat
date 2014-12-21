@@ -35,10 +35,10 @@ require(['binder', 'messagelist'], function (binder, messageList) {
         e.stopImmediatePropagation();
         socket.emit('chat_message', {
             content: $('#m').val(),
-            room: currentRoom             // FIXME: HARD-CODED ROOM!!!
+            room: currentRoom
         });
         $('#m').val('');
-        return false; // Don't submit!
+        return false;
     });
 
 
@@ -76,9 +76,6 @@ require(['binder', 'messagelist'], function (binder, messageList) {
         });
         userArr.forEach(function (user) {
             users[user.displayName] = user;
-            user.rooms.forEach(function (roomName) {
-                messageList.addRoom(roomName);          // FIXME SUPER SUPER SUPER BAD TEMPORARY
-            });
         });
     });
 

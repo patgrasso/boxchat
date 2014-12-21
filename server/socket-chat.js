@@ -58,33 +58,38 @@ module.exports = function (http, auth) {
             lastMessage = {},
             i;
 
-        // Bind methods to our socket
-        attachMethodsToSocket(socket);
+        // Initialize the user
+        (function () {
+            // Bind methods to our socket
+            attachMethodsToSocket(socket);
 
-        // Set user's status to ONLINE
-        user.stat = USER_STATUS.online;
+            // Set user's status to ONLINE
+            user.stat = USER_STATUS.online;
 
-        // Join all the rooms this member is a part of
-        user.rooms.forEach(function (room) {
-            socket.join(room);
-        });
+            // Join all the rooms this member is a part of
+            user.rooms.forEach(function (room) {
+                socket.join(room);
+            });
 
-        // Let everybody know that user has connected
-        console.log(user.displayName + ' has connected');
-        socket.broadcast.emit('user_status', users.toStatusUser(user, 'online'));
+            // Let everybody know that user has connected
+            console.log(user.displayName + ' has connected');
+            socket.broadcast.emit('user_status', users.toStatusUser(user, 'online'));
 
-        // Catch the user up with messages and active users
-        socket.emit('who', users.getAll(['displayName', 'stat', 'rooms'])); // FIXME 'rooms' TEMPORARY
-        socket.emit('my_profile', user);
+            // Catch the user up with messages and active users
+            socket.emit('who', users.getAll(['displayName', 'stat', 'rooms'])); // FIXME 'rooms' TEMPORARY
+            socket.emit('my_profile', user);
 
-        socket.emit('ketchup', 'begin');
-        for (i = 40; i < archive.messages.length; i += 40) {
-            socket.emit('ketchup', archive.messages.slice(i - 40, i));
-        }
-        if (i >= archive.messages.length) {
-            socket.emit('ketchup', archive.messages.slice(i - 40, i));
-        }
+            socket.emit('ketchup', 'begin');
+            for (i = 40; i < archive.messages.length; i += 40) {
+                socket.emit('ketchup', archive.messages.slice(i - 40, i));
+            }
+            if (i >= archive.messages.length) {
+                socket.emit('ketchup', archive.messages.slice(i - 40, i));
+            }
+        })();
 
+
+        // ~~ Handlers ~~
 
         // Chat Message
         socket.on('chat_message', function (msg) {
@@ -112,10 +117,12 @@ module.exports = function (http, auth) {
                     });
                     socket.emit('my_profile', user);
                 } else {
-                    console.log(lastMessage);
-                    archive.messages.push(lastMessage);
-                    archive.write(lastMessage);
-                    io.to(lastMessage.room).emit('chat_message', lastMessage);
+                    if (user.rooms.indexOf(lastMessage.room) !== -1) {
+                        console.log(lastMessage);
+                        archive.messages.push(lastMessage);
+                        archive.write(lastMessage);
+                        io.to(lastMessage.room).emit('chat_message', lastMessage);
+                    }
                 }
             }
         });
