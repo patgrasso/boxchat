@@ -13,7 +13,7 @@
  */
 
 /*jslint browser: true*/
-/*global $, io*/
+/*global $, io, alert*/
 
 require(['binder', 'messagelist'], function (binder, messageList) {
     'use strict';
@@ -46,6 +46,10 @@ require(['binder', 'messagelist'], function (binder, messageList) {
     $('#switchroom').submit(function (e) {
         e.preventDefault();
         e.stopImmediatePropagation();
+        if (self.rooms.indexOf($('#r').val()) === -1) {
+            alert('You are not a member of that room.\nEnter /join [room] to join a room.');
+            return false;
+        }
         messageList.switchToRoom($('#r').val());
         currentRoom = $('#r').val();
         $('#r').val('');

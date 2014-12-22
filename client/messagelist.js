@@ -61,8 +61,6 @@ define(function () {
         }
 
 
-        // ~~ Outer Functions ~~
-
         // Adds a message to the store and (if not null) the viewObject when active
         function addMessage(msgObj) {
             var isAtBottom,
@@ -131,6 +129,9 @@ define(function () {
 
     }
 
+
+
+    // ~~ Outer Functions ~~
 
     // If a room by the name of [roomName] does not already exist, it is
     // created and added to the associative list of rooms at the index of
