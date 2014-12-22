@@ -35,13 +35,26 @@ module.exports = function (io, auth) {
 
 
     // Creates a user status object for relaying a user's status to others
-    function toStatusUser(user, stat, verbose) {
+    function toStatusUser(stat, verbose) {
         return {
-            id: user._id,
-            displayName: user.displayName,
-            stat: stat || user.stat,
+            displayName: this.displayName,
+            stat: stat || this.stat,
             verbose: verbose || false
         };
+    }
+
+
+    // Returns a user object with ONLY the attributes specified in the first
+    // parameter as an array (name attributes by string)
+    function only(attributes) {
+        var that = this,
+            returnUser = {};
+
+        attributes.forEach(function (attr) {
+            returnUser[attr] = that[attr];
+        });
+
+        return returnUser;
     }
 
 
@@ -58,9 +71,15 @@ module.exports = function (io, auth) {
         return false;
     }
 
+    // Bind methods to a user object
+    function bind(user) {
+        user.toStatusUser = toStatusUser;
+        user.only = only;
+    }
+
     return {
         getAll: getAll,
-        toStatusUser: toStatusUser,
-        disableChat: disableChat
+        disableChat: disableChat,
+        bind: bind
     };
 };

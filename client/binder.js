@@ -74,7 +74,11 @@ define(function () {
         Object.observe(obj, function (changes) {
             // Add dynamic functionality to determine if insert() would be
             // better here rather than replaceAll()
-            binderElem.replaceAll(changes[0].object, convertFunc);
+            if (Array.isArray(obj)) {
+                binderElem.replaceAll(changes[0].object, convertFunc);
+            } else if (typeof obj === 'object') {
+                binderElem.replaceAll(Object.keys(changes[0].object), convertFunc);
+            }
         });
 
         attachments.push(binderElem);

@@ -13,7 +13,7 @@
  *          comes from the auth.js module)
  */
 
-/*jslint node: true*/
+/*jslint node: true, regexp: true*/
 
 module.exports = function (http, auth) {
     'use strict';
@@ -22,6 +22,7 @@ module.exports = function (http, auth) {
         passportSocketIO = require('passport.socketio'),
         archive = require('./message-archive')('message_archive.dat'),
         users = require('./users')(io, auth),
+        rooms = require('./rooms')(io, auth),
 
         // Global protocol objects
         CHAT_AUX_TYPE = {
@@ -45,45 +46,98 @@ module.exports = function (http, auth) {
     }));
 
 
+    function attachMethodsToSocket(socket) {
+        rooms.bind(socket);
+    }
+
+
+    function attachMethodsToUser(user) {
+        users.bind(user);
+    }
+
+
+
     // Connection handler
     io.on('connection', function (socket) {
         var user = socket.request.user,
             lastMessage = {},
             i;
 
-        // Set user's status to ONLINE
-        user.stat = USER_STATUS.online;
+        // Initialize the user
+        (function () {
+            // Bind methods to our socket and user
+            attachMethodsToSocket(socket);
+            attachMethodsToUser(user);
 
-        // Let everybody know that user has connected
-        console.log(user.displayName + ' has connected');
-        socket.broadcast.emit('user_status', users.toStatusUser(user, 'online'));
+            // Set user's status to ONLINE
+            user.stat = USER_STATUS.online;
 
-        // Catch the user up with messages and active users
-        socket.emit('ketchup', 'begin');
+            // Join all the rooms this member is a part of
+            user.rooms.forEach(function (room) {
+                socket.join(room);
+            });
 
-        for (i = 40; i < archive.messages.length; i += 40) {
-            socket.emit('ketchup', archive.messages.slice(i - 40, i));
-        }
-        if (i >= archive.messages.length) {
-            socket.emit('ketchup', archive.messages.slice(i - 40, i));
-        }
+            // Let everybody know that user has connected
+            console.log(user.displayName + ' has connected');
+            console.log(user);
+            socket.broadcast.emit('user_status', user.toStatusUser('online'));
 
-        socket.emit('who', users.getAll(['displayName', 'stat']));
+            // Catch the user up with messages and active users
+            socket.emit('whats_the_weather_like', {
+                myProfile: user.only(['username', 'displayName', 'rooms', 'permissions']),
+                rooms: rooms.getAllRooms()
+            });
+            socket.emit('who', users.getAll(['displayName', 'stat', 'rooms']));
 
+            function shouldGoToUser(message) {
+                return user.rooms.indexOf(message.room) !== -1;
+            }
+
+            socket.emit('ketchup', 'begin');
+            for (i = 40; i < archive.messages.length; i += 40) {
+                socket.emit('ketchup', archive.messages.slice(i - 40, i).filter(shouldGoToUser));
+            }
+            if (i >= archive.messages.length) {
+                socket.emit('ketchup', archive.messages.slice(i - 40, i).filter(shouldGoToUser));
+            }
+        })();
+
+
+        // ~~ Handlers ~~
 
         // Chat Message
         socket.on('chat_message', function (msg) {
+            var join = /^\/join (.*)/,      // Temporary - replace with parser
+                leave = /^\/leave (.*)/;    // Temporary - replace with parser
             if (user.permissions.chat === true) {
                 lastMessage = {
                     from: user.displayName,
-                    content: msg,
-                    datetime: new Date().toGMTString()
+                    content: msg.content,
+                    datetime: new Date().toGMTString(),
+                    room: msg.room
                 };
 
-                console.log(lastMessage);
-                archive.messages.push(lastMessage);
-                archive.write(lastMessage);
-                io.emit('chat_message', lastMessage);
+                // Temporary - same as above
+                join = msg.content.match(join);
+                leave = msg.content.match(leave);
+                if (join !== null && join[1] !== '') {
+                    socket.joinRoom(join[1], function (err) {
+                        console.log(user.rooms);
+                    });
+                    socket.emit('my_profile', user);
+                } else if (leave !== null && leave[1] !== '') {
+                    socket.leaveRoom(leave[1], function (err) {
+                        console.log(user.rooms);
+                    });
+                    socket.emit('my_profile', user);
+                } else {
+                    if (user.rooms.indexOf(lastMessage.room) !== -1) {
+                        console.log(lastMessage);
+                        archive.messages.push(lastMessage);
+                        archive.write(lastMessage);
+                        io.to(lastMessage.room).emit('chat_message', lastMessage);
+                    }
+                }
             }
         });
 
@@ -91,7 +145,7 @@ module.exports = function (http, auth) {
         // Disconnect
         socket.on('disconnect', function () {
             console.log(user.displayName + ' has disconnected');
-            io.emit('user_status', users.toStatusUser(user, 'offline'));
+            io.emit('user_status', user.toStatusUser('offline'));
         });
     });
 

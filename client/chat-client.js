@@ -13,41 +13,51 @@
  */
 
 /*jslint browser: true*/
-/*global $, io*/
+/*global $, io, alert*/
 
 require(['binder', 'messagelist', 'notifications'], function (binder, messageList, notifications) {
     'use strict';
     var socket = io(),
-        users = [];
+        currentRoom,
+        users = {},
+        self;
 
     // Bind users[] to #online_users (<ul>) so that any changes to users[] will
     // reflect on the page immediately
     binder.attach(users, 'userlist', function (user) {
-        return user.displayName; // Return the user's name to be displayed in the <li>
+        return user; // Return the user's name to be displayed in the <li>
     });
 
-    // Attach method to remove active users
-    users.removeUser = function (user) {
-        var i = 0;
-
-        while (i < users.length && users[i].displayName !== user.displayName) {
-            i += 1;
-        }
-
-        users.splice(i, 1);
-    };
 
     // Chat form submission function
     $('#messageform').submit(function (e) {
         e.preventDefault();
         e.stopImmediatePropagation();
-        socket.emit('chat_message', $('#m').val());
+        socket.emit('chat_message', {
+            content: $('#m').val(),
+            room: currentRoom
+        });
         $('#m').val('');
-        return false; // Don't submit!
+        return false;
+    });
+
+
+    // Change room form submission function
+    $('#switchroom').submit(function (e) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        if (self.rooms.indexOf($('#r').val()) === -1) {
+            alert('You are not a member of that room.\nEnter /join [room] to join a room.');
+            return false;
+        }
+        messageList.switchToRoom($('#r').val());
+        currentRoom = $('#r').val();
+        $('#r').val('');
+        return false;
     });
 
     // Initialize message list handler with id of <ul> containing all the messages
-    messageList.init('messages');
+    messageList.init('messages', 'general');
 
     // Initialize notifications
     notifications.init();
@@ -68,11 +78,11 @@ require(['binder', 'messagelist', 'notifications'], function (binder, messageLis
 
     // userArr contains user objects for every active in the room
     socket.on('who', function (userArr) {
-        while (users.length) {
-            users.pop();
-        }
+        Object.keys(users).forEach(function (username) {
+            delete users[username];
+        });
         userArr.forEach(function (user) {
-            users.push(user);
+            users[user.displayName] = user;
         });
     });
 
@@ -86,11 +96,24 @@ require(['binder', 'messagelist', 'notifications'], function (binder, messageLis
 
     // Contains status information on a user in property 'stat'. See the protocol
     // document for more information on what this might contain
-    socket.on('user_status', function (obj) {
-        if (obj.stat === 'online') {
-            users.push(obj);
+    socket.on('user_status', function (user) {
+        if (user.stat === 'offline') {
+            delete users[user.displayName];
         } else {
-            users.removeUser(obj);
+            users[user.displayName] = user;
         }
     });
+
+
+    // Provides start-up information with this user's profile, information about
+    // other connected users, and room info (just the names)
+    socket.on('whats_the_weather_like', function (report) {
+        self = report.myProfile;
+        report.rooms.forEach(function (room) {
+            messageList.addRoom(room);
+        });
+        currentRoom = 'general';
+        messageList.switchToRoom(currentRoom);
+    });
+
 });

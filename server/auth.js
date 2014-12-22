@@ -168,8 +168,6 @@ function register(req, res) {
 
 function update(username, options) {
     'use strict';
-    var allGood = false;
-
     // Allow a string or user object to be passed in
     if (typeof username !== 'string' && username.username !== undefined) {
         username = username.username;
@@ -180,10 +178,14 @@ function update(username, options) {
     }, {
         '$set': options
     }, function (err) {
-        allGood = !err;
+        return !err;
     });
+}
 
-    return allGood;
+
+function getAllRooms(callback) {
+    'use strict';
+    RoomDetails.find(callback);
 }
 
 
@@ -212,6 +214,7 @@ module.exports = function (app) {
         cookieParser: cookieParser,
         login: login,
         register: register,
-        update: update
+        update: update,
+        getAllRooms: getAllRooms
     };
 };
