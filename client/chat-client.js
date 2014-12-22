@@ -18,8 +18,8 @@
 require(['binder', 'messagelist'], function (binder, messageList) {
     'use strict';
     var socket = io(),
-        users = {},
         currentRoom,
+        users = {},
         self;
 
     // Bind users[] to #online_users (<ul>) so that any changes to users[] will
@@ -97,13 +97,15 @@ require(['binder', 'messagelist'], function (binder, messageList) {
     });
 
 
-    // Gets own profile data from the server
-    socket.on('my_profile', function (user) {
-        self = user;
-        user.rooms.forEach(function (roomName) {
-            messageList.addRoom(roomName);
-            messageList.switchToRoom('general');
-            currentRoom = 'general';
+    // Provides start-up information with this user's profile, information about
+    // other connected users, and room info (just the names)
+    socket.on('whats_the_weather_like', function (report) {
+        self = report.myProfile;
+        report.rooms.forEach(function (room) {
+            messageList.addRoom(room);
         });
+        currentRoom = 'general';
+        messageList.switchToRoom(currentRoom);
     });
+
 });

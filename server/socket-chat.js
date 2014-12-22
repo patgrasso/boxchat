@@ -51,6 +51,11 @@ module.exports = function (http, auth) {
     }
 
 
+    function attachMethodsToUser(user) {
+        users.bind(user);
+    }
+
+
 
     // Connection handler
     io.on('connection', function (socket) {
@@ -60,8 +65,9 @@ module.exports = function (http, auth) {
 
         // Initialize the user
         (function () {
-            // Bind methods to our socket
+            // Bind methods to our socket and user
             attachMethodsToSocket(socket);
+            attachMethodsToUser(user);
 
             // Set user's status to ONLINE
             user.stat = USER_STATUS.online;
@@ -73,18 +79,26 @@ module.exports = function (http, auth) {
 
             // Let everybody know that user has connected
             console.log(user.displayName + ' has connected');
-            socket.broadcast.emit('user_status', users.toStatusUser(user, 'online'));
+            console.log(user);
+            socket.broadcast.emit('user_status', user.toStatusUser('online'));
 
             // Catch the user up with messages and active users
-            socket.emit('who', users.getAll(['displayName', 'stat', 'rooms'])); // FIXME 'rooms' TEMPORARY
-            socket.emit('my_profile', user);
+            socket.emit('whats_the_weather_like', {
+                myProfile: user.only(['username', 'displayName', 'rooms', 'permissions']),
+                rooms: rooms.getAllRooms()
+            });
+            socket.emit('who', users.getAll(['displayName', 'stat', 'rooms']));
+
+            function shouldGoToUser(message) {
+                return user.rooms.indexOf(message.room) !== -1;
+            }
 
             socket.emit('ketchup', 'begin');
             for (i = 40; i < archive.messages.length; i += 40) {
-                socket.emit('ketchup', archive.messages.slice(i - 40, i));
+                socket.emit('ketchup', archive.messages.slice(i - 40, i).filter(shouldGoToUser));
             }
             if (i >= archive.messages.length) {
-                socket.emit('ketchup', archive.messages.slice(i - 40, i));
+                socket.emit('ketchup', archive.messages.slice(i - 40, i).filter(shouldGoToUser));
             }
         })();
 
@@ -131,7 +145,7 @@ module.exports = function (http, auth) {
         // Disconnect
         socket.on('disconnect', function () {
             console.log(user.displayName + ' has disconnected');
-            io.emit('user_status', users.toStatusUser(user, 'offline'));
+            io.emit('user_status', user.toStatusUser('offline'));
         });
     });
 

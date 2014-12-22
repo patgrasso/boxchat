@@ -2,6 +2,14 @@
 
 module.exports = function (io, auth) {
     'use strict';
+    var allRooms = [];
+
+
+    auth.getAllRooms(function (err, rooms) {
+        rooms.forEach(function (room) {
+            allRooms.push(room.name);
+        });
+    });
 
 
     // Extension for socket object to join a room
@@ -50,6 +58,12 @@ module.exports = function (io, auth) {
     }
 
 
+    // Returns all room names as an array
+    function getAllRooms() {
+        return allRooms;
+    }
+
+
     // Binds functions to a socket object
     function bind(socket) {
         socket.joinRoom = joinRoom;
@@ -58,6 +72,7 @@ module.exports = function (io, auth) {
 
 
     return {
-        bind: bind
+        bind: bind,
+        getAllRooms: getAllRooms
     };
 };
