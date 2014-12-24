@@ -24,17 +24,17 @@ define(function () {
     var attachments = [];
 
     /**
-     *  BinderElement (constructor) - A wrapper object for DOM elements
+     *  ListElement (constructor) - A wrapper object for list (UL or OL) elements
      *      with the ability to modify their contents quickly
      */
-    function BinderElement(id) {
+    function ListElement(id) {
         this.element = document.getElementById(id);
 
-        // For <ul>s
         function empty() {
             this.element.innerHTML = '';
         }
 
+        // For <ul>s
         function append(text) {
             var textNode = document.createTextNode(text),
                 newListItem = document.createElement('li');
@@ -42,7 +42,7 @@ define(function () {
             this.element.appendChild(newListItem);
         }
 
-        function replaceAll(list, convertFunc) {
+        function replaceAllList(list, convertFunc) {
             var li,
                 ul = document.createElement('ul');
 
@@ -59,7 +59,22 @@ define(function () {
             this.element.innerHTML = ul.innerHTML;
         }
 
-        this.replaceAll = replaceAll;
+
+        // For <p>s (or other simple text element)
+        function replaceAllText(list, convertFunc) {
+            this.element.innerText = convertFunc(list);
+        }
+
+
+        // Attach the correct set of methods for each type of element
+        switch (this.element.nodeName) {
+        case 'UL':
+            this.replaceAll = replaceAllList;
+            break;
+        case 'P':
+            this.replaceAll = replaceAllText;
+            break;
+        }
     }
 
 
@@ -69,7 +84,7 @@ define(function () {
     // function that is called on each item in obj, the return value
     // of which will become that <li>s innerText.
     function attach(obj, elementId, convertFunc) {
-        var binderElem = new BinderElement(elementId);
+        var binderElem = new ListElement(elementId);
 
         Object.observe(obj, function (changes) {
             // Add dynamic functionality to determine if insert() would be

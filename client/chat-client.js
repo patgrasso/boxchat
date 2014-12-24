@@ -20,7 +20,13 @@ require(['binder', 'messagelist', 'notifications'], function (binder, messageLis
     var socket = io(),
         currentRoom,
         users = {},
-        self;
+        self,
+
+        usersTyping = (function () {
+            var peopleWhoAreTyping = [];
+
+        })();
+
 
     // Bind users[] to #online_users (<ul>) so that any changes to users[] will
     // reflect on the page immediately
@@ -115,5 +121,18 @@ require(['binder', 'messagelist', 'notifications'], function (binder, messageLis
         currentRoom = 'general';
         messageList.switchToRoom(currentRoom);
     });
+
+
+    // Indicates whether a user is typing or not in a certain room
+    socket.on('user_typing', function (msg) {
+        if (msg.isTyping === true) {
+            usersTyping.addPerson(msg.displayName);
+        } else if (msg.isTyping === false) {
+            usersTyping.removePerson(msg.displayName);
+        }
+    });
+
+
+
 
 });
