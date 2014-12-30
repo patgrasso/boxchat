@@ -11,11 +11,10 @@
 /*jslint browser: true*/
 /*global define*/
 
+
 define(function () {
     'use strict';
-    var rooms,
-        ulid,
-        currentRoom = 'general';
+    var MESSAGE_LIST_ID = 'messages';
 
 
     // This will create a message list for a particular room. All messages are stored
@@ -90,7 +89,7 @@ define(function () {
         // Give this room the ability to write to the view and change the view to reflect
         // this room's store
         function activate(listObjectId) {
-            viewObject = document.getElementById(listObjectId);
+            viewObject = document.getElementById(listObjectId || MESSAGE_LIST_ID);
             viewObject.innerHTML = store.innerHTML;
         }
 
@@ -126,65 +125,10 @@ define(function () {
             isActive: isActive,
             goToBottom: goToBottom
         };
-
-    }
-
-
-
-    // ~~ Outer Functions ~~
-
-    // If a room by the name of [roomName] does not already exist, it is
-    // created and added to the associative list of rooms at the index of
-    // its name
-    function addRoom(roomName) {
-        if (rooms[roomName] === undefined) {
-            rooms[roomName] = createRoomMessageList();
-        }
-    }
-
-
-    // Initializes the module by creating an empty rooms object (key = room name,
-    // value = room object), and capturing the <ul>'s id so that it may be updated
-    // accordingly
-    function init(listObjectId) {
-        rooms = {};
-        ulid = listObjectId;
-
-        // By default, the module loads currentRoom with 'general'
-        rooms[currentRoom] = createRoomMessageList();
-    }
-
-
-    // Receives the incoming message. If the room specified by the message
-    // does not already exist, it is created
-    function addMessage(msgObj) {
-        addRoom(msgObj.room);
-        rooms[msgObj.room].addMessage(msgObj);
-    }
-
-
-    // Allows the room [roomName] to write to the view, as well as transfer its
-    // current data over immediately after switching
-    function switchToRoom(roomName) {
-        rooms[currentRoom].deactivate();
-        rooms[roomName].activate(ulid);
-        rooms[roomName].goToBottom();
-        currentRoom = roomName;
-    }
-
-
-    // Clear all the msesages in a room
-    function clearMessages(roomName) {
-        roomName = roomName || currentRoom;
-        rooms[roomName].clearMessages();
     }
 
 
     return {
-        addRoom: addRoom,
-        init: init,
-        addMessage: addMessage,
-        switchToRoom: switchToRoom,
-        clearMessages: clearMessages
+        createRoomMessageList: createRoomMessageList
     };
 });
