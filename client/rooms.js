@@ -5,8 +5,9 @@
 
 define(['binder', 'messagelist'], function (binder, messagelist) {
     'use strict';
-    var rooms = binder.observable(), // TODO: implement observable
-        currentRoom;
+    var rooms = {},//binder.observable(), // TODO: implement observable
+        currentRoom,
+        returnObject;
 
     // ~~ PRIVATE ~~ //
 
@@ -14,30 +15,19 @@ define(['binder', 'messagelist'], function (binder, messagelist) {
     // can be pushed to the room) from messagelist and .... 
     // TODO: Add more stuff (if necessary, obviously)
     function createRoom(roomName) {
-        var messageHandler = messagelist.createRoomMessageList(),
-            myName = roomName;
-
-        // Calls the messagelist module's switchToRoom() method to forward this
-        // room's messages to the view
-        function focus(listId) {
-            rooms[currentRoom].deactivate();
-            rooms[myName].activate(listId);
-            rooms[myName].goToBottom();
-            currentRoom = myName;
-        }
+        var myName = roomName,
+            unseenMessages = 0;
 
         return {
             name: myName,
-            addMessage: messageHandler.addMessage,
-            clearMessages: messageHandler.clearMessages,
-            focus: focus
+            unseenMessages: unseenMessages
         };
     }
 
 
     // Simple check to see if a room is already in the collection
     function roomExists(roomName) {
-        return rooms.indexOf(roomName) !== -1;
+        return rooms[roomName] !== undefined;
     }
 
 
@@ -47,7 +37,7 @@ define(['binder', 'messagelist'], function (binder, messagelist) {
     // Adds a room to the collection if a room with the same name does not
     // already exist
     function addRoom(roomName) {
-        if (rooms.indexOf(roomName) === -1) {
+        if (!roomExists(roomName)) {
             rooms[roomName] = createRoom(roomName);
             return true;
         }
@@ -55,29 +45,38 @@ define(['binder', 'messagelist'], function (binder, messagelist) {
     }
 
 
-    // Adds a message to the appropriate room using the passed in object's
-    // 'room' attribute. If the room does not exist, the message is discarded
-    function addMessage(msgObj) {
-        if (roomExists(msgObj.room)) {
-            rooms[msgObj.room].addMessage(msgObj);
+    // Switches to a new room by setting currentRoom to a new valid room name
+    function enterRoom(roomName) {
+        if (roomExists(roomName)) {
+            currentRoom = roomName;
             return true;
         }
         return false;
     }
 
 
-    // Clears the messages in a certain room
-    function clearMessages(roomName) {
-        roomName = roomName || currentRoom;
-        if (roomExists(roomName)) {
-            rooms[roomName].clearMessages();
+    // Adds 1 to 'unseenMessages' for a given room
+    function incrementMessageCount(messageObj) {
+        if (typeof messageObj === 'object') {
+            messageObj = messageObj.room;
+        }
+        if (messageObj !== currentRoom) {
+            rooms[messageObj].unseenMessages += 1;
         }
     }
 
 
-    return {
+    returnObject = {
         addRoom: addRoom,
-        addMessage: addMessage,
-        clearMessages: clearMessages
+        enter: enterRoom,
+        newMessage: incrementMessageCount
     };
+
+    Object.defineProperty(returnObject, 'currentRoom', {
+        get: function () {
+            return currentRoom;
+        }
+    });
+
+    return returnObject;
 });

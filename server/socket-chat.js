@@ -60,8 +60,28 @@ module.exports = function (http, auth) {
     // Connection handler
     io.on('connection', function (socket) {
         var user = socket.request.user,
-            lastMessage = {},
-            i;
+            lastMessage = {};
+
+        // Checks to see if a message should go to the user based on the user's current room and
+        // the message's destination room. Sort of like a mail sorter
+        function shouldGoToUser(message) {
+            return user.currentRoom === message.room;
+        }
+
+
+        // Sends all of a room's messages to the user in appropriately sized chunks
+        function sendMessagesForRoom() {
+            var i;
+
+            socket.emit('ketchup', 'begin');
+            for (i = 40; i < archive.messages.length; i += 40) {
+                socket.emit('ketchup', archive.messages.slice(i - 40, i).filter(shouldGoToUser));
+            }
+            if (i >= archive.messages.length) {
+                socket.emit('ketchup', archive.messages.slice(i - 40, i).filter(shouldGoToUser));
+            }
+        }
+
 
         // Initialize the user
         (function () {
@@ -76,6 +96,7 @@ module.exports = function (http, auth) {
             user.rooms.forEach(function (room) {
                 socket.join(room);
             });
+            user.currentRoom = null;
 
             // Let everybody know that user has connected
             console.log(user.displayName + ' has connected');
@@ -89,17 +110,7 @@ module.exports = function (http, auth) {
             });
             socket.emit('who', users.getAll(['displayName', 'stat', 'rooms']));
 
-            function shouldGoToUser(message) {
-                return user.rooms.indexOf(message.room) !== -1;
-            }
-
-            socket.emit('ketchup', 'begin');
-            for (i = 40; i < archive.messages.length; i += 40) {
-                socket.emit('ketchup', archive.messages.slice(i - 40, i).filter(shouldGoToUser));
-            }
-            if (i >= archive.messages.length) {
-                socket.emit('ketchup', archive.messages.slice(i - 40, i).filter(shouldGoToUser));
-            }
+            sendMessagesForRoom();
         })();
 
 
@@ -138,6 +149,16 @@ module.exports = function (http, auth) {
                         io.to(lastMessage.room).emit('chat_message', lastMessage);
                     }
                 }
+            }
+        });
+
+
+        // Switches the user's current room so that only messages sent to that room
+        // will be relayed to the user
+        socket.on('room_switch', function (roomInfo) {
+            if (user.rooms.indexOf(roomInfo.room) !== -1) {
+                user.currentRoom = roomInfo.room;
+                sendMessagesForRoom();
             }
         });
 

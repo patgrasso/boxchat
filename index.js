@@ -27,7 +27,9 @@ var clientScripts = [
         '/client/require.js',
         '/client/binder.js',
         '/client/messagelist.js',
-        '/client/notifications.js'
+        '/client/notifications.js',
+        '/client/rooms.js',
+        '/client/socket-wrapper.js'
     ];
 
 var clientCSS = [
