@@ -62,9 +62,6 @@ require(['binder',
                 alert('You are not a member of that room.\nEnter /join [room] to join a room.');
                 return false;
             }
-            socket.emit('room_switch', {
-                room: $('#r').val()
-            });
             rooms.enter($('#r').val());
             $('#r').val('');
             return false;

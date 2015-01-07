@@ -1,9 +1,17 @@
+/**
+ *  Name: rooms.js
+ *  Author: Patrick Grasso
+ *  Description: Objects for each room are kept here, with information about each.
+ *      Right now, this includes the room's name and number of unread messages.
+ *  Dependencies:
+ *      socket-wrapper - Socket.io wrapper module with ready-to-use socket object
+ */
 
-
-
+/*jslint browser: true*/
 /*global define*/
 
-define(['binder', 'messagelist'], function (binder, messagelist) {
+
+define(['binder', 'messagelist', 'socket-wrapper'], function (binder, messagelist, socket) {
     'use strict';
     var rooms = {},//binder.observable(), // TODO: implement observable
         currentRoom,
@@ -49,6 +57,9 @@ define(['binder', 'messagelist'], function (binder, messagelist) {
     function enterRoom(roomName) {
         if (roomExists(roomName)) {
             currentRoom = roomName;
+            socket.emit('room_switch', {
+                room: currentRoom
+            });
             return true;
         }
         return false;
