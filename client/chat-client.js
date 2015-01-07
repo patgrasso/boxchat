@@ -15,7 +15,7 @@
 /*jslint browser: true*/
 /*global $, io, alert*/
 
-require(['binder', 'messagelist', 'notifications'], function (binder, messageList, notifications) {
+require(['binder', 'messagelist', 'rooms', 'notifications'], function (binder, messageList, rooms, notifications) {
     'use strict';
     var socket = io(),
         currentRoom,
@@ -56,7 +56,9 @@ require(['binder', 'messagelist', 'notifications'], function (binder, messageLis
             alert('You are not a member of that room.\nEnter /join [room] to join a room.');
             return false;
         }
-        messageList.switchToRoom($('#r').val());
+        socket.emit('room_switch', {
+            room: $('#r').val()
+        });
         currentRoom = $('#r').val();
         $('#r').val('');
         return false;
@@ -95,8 +97,12 @@ require(['binder', 'messagelist', 'notifications'], function (binder, messageLis
 
     // Receives a chat message object with 'displayName', 'content', and 'datetime'
     socket.on('chat_message', function (msg) {
-        messageList.addMessage(msg);
-        notifications.push(msg);
+        if (msg.content !== undefined) {
+            messageList.addMessage(msg);
+            notifications.push(msg);
+        } else {
+            rooms.newMessage(msg);
+        }
     });
 
 
@@ -116,10 +122,9 @@ require(['binder', 'messagelist', 'notifications'], function (binder, messageLis
     socket.on('whats_the_weather_like', function (report) {
         self = report.myProfile;
         report.rooms.forEach(function (room) {
-            messageList.addRoom(room);
+            rooms.createRoom(room);
         });
         currentRoom = 'general';
-        messageList.switchToRoom(currentRoom);
     });
 
 

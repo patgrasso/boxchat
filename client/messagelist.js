@@ -14,121 +14,88 @@
 
 define(function () {
     'use strict';
-    var MESSAGE_LIST_ID = 'messages';
+    var MESSAGE_LIST_ID = 'messages',
+        viewObject = document.getElementById(MESSAGE_LIST_ID),
+        lastMessageTime,
+        lastMessageOwner;
+
+    // Creates a new message entry for the message list and returns the
+    // li to be attached to the list
+    function createNewEntry(msgObj) {
+        var date = new Date(msgObj.datetime),
+            li = document.createElement('li'),
+            ownerSpan,
+            timeSpan,
+            contentParagraph;
+
+        if (date - lastMessageTime > 60000 || msgObj.from !== lastMessageOwner) {
+            ownerSpan = document.createElement('span');
+            ownerSpan.setAttribute('class', 'messageUserName');
+            ownerSpan.innerText = msgObj.from;
+
+            timeSpan = document.createElement('span');
+            timeSpan.setAttribute('class', 'messageTime');
+            timeSpan.innerText = '  ' + date.toLocaleTimeString();
 
 
-    // This will create a message list for a particular room. All messages are stored
-    // in a "store" (a model) that is not displayed, but when activated, the room
-    // plants its contents into the view and continues to broadcast to both the view
-    // and the model until deactivated (after which, the room may only write to the model)
-    function createRoomMessageList() {
-        var viewObject = null,
-            store = document.createElement('ul'),
-            lastMessageTime,
-            lastMessageOwner;
-
-        // Creates a new message entry for the message list and returns the
-        // li to be attached to the list
-        function createNewEntry(msgObj) {
-            var date = new Date(msgObj.datetime),
-                li = document.createElement('li'),
-                ownerSpan,
-                timeSpan,
-                contentParagraph;
-
-            if (date - lastMessageTime > 60000 || msgObj.from !== lastMessageOwner) {
-                ownerSpan = document.createElement('span');
-                ownerSpan.setAttribute('class', 'messageUserName');
-                ownerSpan.innerText = msgObj.from;
-
-                timeSpan = document.createElement('span');
-                timeSpan.setAttribute('class', 'messageTime');
-                timeSpan.innerText = '  ' + date.toLocaleTimeString();
-
-
-                li.appendChild(ownerSpan);
-                li.appendChild(timeSpan);
-            }
-
-            contentParagraph = document.createElement('p');
-            contentParagraph.innerText = msgObj.content;
-            li.appendChild(contentParagraph);
-
-            lastMessageTime = date;
-            lastMessageOwner = msgObj.from;
-            return li;
+            li.appendChild(ownerSpan);
+            li.appendChild(timeSpan);
         }
 
+        contentParagraph = document.createElement('p');
+        contentParagraph.innerText = msgObj.content;
+        li.appendChild(contentParagraph);
 
-        // Adds a message to the store and (if not null) the viewObject when active
-        function addMessage(msgObj) {
-            var isAtBottom,
-                newEntry = createNewEntry(msgObj);
+        lastMessageTime = date;
+        lastMessageOwner = msgObj.from;
+        return li;
+    }
 
-            if (viewObject !== null) {
-                isAtBottom = viewObject.scrollHeight - viewObject.clientHeight <= viewObject.scrollTop + 1;
-                viewObject.appendChild(newEntry.cloneNode(true));
-            }
-            store.appendChild(newEntry);
 
-            if (isAtBottom) {
-                viewObject.scrollTop = viewObject.scrollHeight - viewObject.clientHeight;
-            }
+    // Adds a message to the store and (if not null) the viewObject when active
+    function addMessage(msgObj) {
+        var isAtBottom,
+            newEntry = createNewEntry(msgObj);
+
+        if (viewObject !== null) {
+            isAtBottom = viewObject.scrollHeight - viewObject.clientHeight <= viewObject.scrollTop + 1;
+            viewObject.appendChild(newEntry.cloneNode(true));
         }
 
-
-        // Clear all messages (in both the model and the view)
-        function clearMessages() {
-            store.innerHTML = '';
-            if (viewObject) {
-                viewObject.innerHTML = '';
-            }
+        if (isAtBottom) {
+            viewObject.scrollTop = viewObject.scrollHeight - viewObject.clientHeight;
         }
+    }
 
 
-        // Give this room the ability to write to the view and change the view to reflect
-        // this room's store
-        function activate(listObjectId) {
-            viewObject = document.getElementById(listObjectId || MESSAGE_LIST_ID);
-            viewObject.innerHTML = store.innerHTML;
+    // Clear all messages (in both the model and the view)
+    function clearMessages() {
+        if (viewObject) {
+            viewObject.innerHTML = '';
         }
+    }
 
 
-        // Nullify the view handle so that it cannot be written to
-        function deactivate() {
-            viewObject = null;
+    // Sets the DOM node to which new messages will be appended (gets elem by ID)
+    function setBroadcastId(listObjectId) {
+        viewObject = document.getElementById(listObjectId) ||
+            document.getElementById(MESSAGE_LIST_ID);
+    }
+
+
+    // Jumps to the bottom of the message list (so that the scroll bar hits the bottom)
+    function goToBottom() {
+        if (viewObject) {
+            viewObject.scrollTop = viewObject.scrollHeight - viewObject.clientHeight;
         }
-
-
-        // Returns true if this room is active (has viewObject !== null), false otherwise
-        function isActive() {
-            if (viewObject) {
-                return true;
-            }
-            return false;
-        }
-
-
-        // Jumps to the bottom of the message list (so that the scroll bar hits the bottom)
-        function goToBottom() {
-            if (viewObject) {
-                viewObject.scrollTop = viewObject.scrollHeight - viewObject.clientHeight;
-            }
-        }
-
-
-        return {
-            addMessage: addMessage,
-            clearMessages: clearMessages,
-            activate: activate,
-            deactivate: deactivate,
-            isActive: isActive,
-            goToBottom: goToBottom
-        };
     }
 
 
     return {
-        createRoomMessageList: createRoomMessageList
+        addMessage: addMessage,
+        clearMessages: clearMessages,
+        setBroadcastId: setBroadcastId,
+        goToBottom: goToBottom
     };
+
 });
