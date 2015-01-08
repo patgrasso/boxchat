@@ -11,7 +11,7 @@
 /*global define*/
 
 
-define(['binder', 'messagelist', 'socket-wrapper'], function (binder, messagelist, socket) {
+define(['socket-wrapper'], function (socket) {
     'use strict';
     var rooms = {},//binder.observable(), // TODO: implement observable
         currentRoom,

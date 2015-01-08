@@ -8,7 +8,10 @@
  *  Dependencies:
  *      binder - Javascript Object - DOM Element data binding utility
  *      messageList - Manager for the big message box <ul> on the page
- *      socket - socket.io object that allows the client to communicate via
+ *      rooms - Stores information about each room and provides functions that
+ *          involve rooms (e.g. changing rooms)
+ *      notifications - Handles all notifications
+ *      socket-wrapper - socket.io object that allows the client to communicate via
  *          websockets with the server
  */
 
