@@ -18,7 +18,7 @@
 
 var app = require('express')();
 var http = require('http').Server(app);
-var auth = require('./server/auth')(app);
+var auth = require('./server/auth').init(app);
 var passport = auth.passport;
 var socketChat = require('./server/socket-chat')(http, auth, app);
 
@@ -109,16 +109,21 @@ app.get('/chat/', function (req, res) {
     'use strict';
     res.redirect('/chat');
 });
-/*
-app.get('/chat/*', function (req, res) {
+
+
+
+// User information (background requests)
+app.get('/userInfo/box', function (req, res) {
     'use strict';
     if (req.isAuthenticated()) {
-        res.sendFile(__dirname + '/views/index.html');
+        res.send(req.user.box);
     } else {
-        res.redirect('/login');
+        res.status(401);
+        res.send();
     }
 });
-*/
+
+
 
 app.get('/logout', function (req, res) {
     'use strict';

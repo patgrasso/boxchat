@@ -15,5 +15,12 @@
 
 define(['../socket.io/socket.io.js'], function (io) {
     'use strict';
-    return io();
+    var request = new XMLHttpRequest();
+    request.open('GET', '/userInfo/box', false);
+    request.send(null);
+
+    if (request.status === 200) {
+        return io('/' + request.responseText);
+    }
+    return null;
 });

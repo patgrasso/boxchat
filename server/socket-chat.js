@@ -24,7 +24,7 @@ module.exports = function (http, auth, app) {
         passportSocketIO = require('passport.socketio'),
         archive = require('./message-archive')('message_archive.dat'),
         users = require('./users')(io, auth),
-        rooms = require('./rooms')(io, auth),
+        boxes = require('./boxes'),
 
         // Global protocol objects
         CHAT_AUX_TYPE = {
@@ -49,7 +49,13 @@ module.exports = function (http, auth, app) {
 
 
     function attachMethodsToSocket(socket) {
-        rooms.bind(socket);
+        if (!boxes.bind(socket)) {
+            socket.emit('error', {
+                message: 'You are not a member of any box. Please join a box or ' +
+                    'create one of your own.',
+                disconnect: true
+            });
+        }
     }
 
 
@@ -59,11 +65,13 @@ module.exports = function (http, auth, app) {
 
 
 
+
+
     // Connection handler
-    io.on('connection', function (socket) {
+    function applyConnectionHandler(socket, nsp, box) {
         var user = socket.request.user,
             lastMessage = {};
-        
+
         // Checks to see if a message should go to the user based on the user's current room and
         // the message's destination room. Sort of like a mail sorter
         function shouldGoToUser(message) {
@@ -121,7 +129,7 @@ module.exports = function (http, auth, app) {
             // Catch the user up with messages and active users
             socket.emit('whats_the_weather_like', {
                 myProfile: user.only(['username', 'displayName', 'rooms', 'permissions']),
-                rooms: rooms.getAllRooms(),
+                rooms: box.rooms.getAllRooms(),
                 currentRoom: user.currentRoom
             });
             socket.emit('who', users.getAll(['displayName', 'stat', 'rooms']));
@@ -148,12 +156,12 @@ module.exports = function (http, auth, app) {
                 join = msg.content.match(join);
                 leave = msg.content.match(leave);
                 if (join !== null && join[1] !== '') {
-                    socket.joinRoom(join[1], function (err) {
+                    socket.joinRoom(join[1], function () {
                         console.log(user.rooms);
                     });
                     socket.emit('my_profile', user);
                 } else if (leave !== null && leave[1] !== '') {
-                    socket.leaveRoom(leave[1], function (err) {
+                    socket.leaveRoom(leave[1], function () {
                         console.log(user.rooms);
                     });
                     socket.emit('my_profile', user);
@@ -162,7 +170,7 @@ module.exports = function (http, auth, app) {
                         console.log(lastMessage);
                         archive.messages.push(lastMessage);
                         archive.write(lastMessage);
-                        io.to(lastMessage.room).emit('chat_message', lastMessage);
+                        nsp.to(lastMessage.room).emit('chat_message', lastMessage);
                     }
                 }
             }
@@ -187,9 +195,21 @@ module.exports = function (http, auth, app) {
         // Disconnect
         socket.on('disconnect', function () {
             console.log(user.displayName + ' has disconnected');
-            io.emit('user_status', user.toStatusUser('offline'));
+            nsp.emit('user_status', user.toStatusUser('offline'));
         });
+    }
+
+
+
+    // Create namespaces for each box (account) and apply the connection handler
+    boxes.getAllBoxNames().forEach(function (boxName) {
+        nsps[boxName] = io.of('/' + boxName);
+        nsps[boxName].on('connection', function (socket) {
+            applyConnectionHandler(socket, nsps[boxName], boxes[boxName]);
+        });
+        console.log(nsps[boxName]);
     });
+
 
 
     return io;

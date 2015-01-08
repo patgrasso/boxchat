@@ -1,16 +1,12 @@
 
 
-module.exports = function (io, auth) {
+module.exports = function (boxObj, auth) {
     'use strict';
     var allRooms = [];
 
-
-    auth.getAllRooms(function (err, rooms) {
-        rooms.forEach(function (room) {
-            allRooms.push(room.name);
-        });
+    boxObj.rooms.forEach(function (roomName) {
+        allRooms.push(roomName);
     });
-
 
     // Extension for socket object to join a room
     // * this refers to io.socket object *
@@ -19,7 +15,9 @@ module.exports = function (io, auth) {
             validRoom = false,
             that = this;
 
-        auth.getAllRooms(function (err, rooms) {
+        auth.getAllRooms({
+            name: boxObj.name
+        }, function (err, rooms) {
             rooms.forEach(function (roomObj) {
                 if (roomObj.name === room) {
                     validRoom = true;

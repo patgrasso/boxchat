@@ -45,7 +45,8 @@ var UserDetail = new Schema({
             admin: Boolean,
             chat: Boolean
         },
-        rooms: Array
+        rooms: Array,
+        box: String
     }, {
         collection: 'userInfo'
     });
@@ -58,6 +59,17 @@ var RoomDetail = new Schema({
         collection: 'roomInfo'
     });
 var RoomDetails = mongoose.model('roomInfo', RoomDetail);
+
+// Box Information
+var BoxDetail = new Schema({
+        name: String,
+        plugins: Object,
+        users: Array,
+        rooms: Array
+    }, {
+        collection: 'boxInfo'
+    });
+var BoxDetails = mongoose.model('boxInfo', BoxDetail);
 
 // Connect-Mongo (session storage)
 var sessionStore = new MongoStore({mongoose_connection: mongoose.connection});
@@ -183,14 +195,25 @@ function update(username, options) {
 }
 
 
-function getAllRooms(callback) {
+function getAllRooms(boxQuery, callback) {
     'use strict';
-    RoomDetails.find(callback);
+    BoxDetails.findOne(boxQuery, function (err, data) {
+        if (data) {
+            callback(err, data.rooms);
+        } else {
+            callback(false);
+        }
+    });
 }
 
 
-// Export
-module.exports = function (app) {
+function getAllBoxes(callback) {
+    'use strict';
+    BoxDetails.find(callback);
+}
+
+
+function init(app) {
     'use strict';
     // Set up session usage
     app.use(cookieParser());
@@ -206,15 +229,20 @@ module.exports = function (app) {
     app.use(passport.session());
     app.use(bodyParser.urlencoded({ extended: false }));
 
-    return {
-        passport: passport,
-        mongoose: mongoose,
-        store: sessionStore,
-        bodyParser: bodyParser,
-        cookieParser: cookieParser,
-        login: login,
-        register: register,
-        update: update,
-        getAllRooms: getAllRooms
-    };
+    return module.exports;
+}
+
+
+// Export
+module.exports = {
+    passport: passport,
+    mongoose: mongoose,
+    store: sessionStore,
+    bodyParser: bodyParser,
+    cookieParser: cookieParser,
+    login: login,
+    register: register,
+    update: update,
+    getAllRooms: getAllRooms,
+    getAllBoxes: getAllBoxes
 };
