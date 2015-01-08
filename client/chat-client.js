@@ -125,7 +125,7 @@ require(['binder',
             report.rooms.forEach(function (room) {
                 rooms.addRoom(room);
             });
-            rooms.enter('general');
+            rooms.enter(report.currentRoom);
         });
 
 

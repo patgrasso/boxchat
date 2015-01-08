@@ -11,11 +11,13 @@
  *      http - The require('http').Server object created in index.js
  *      auth - The authorization object initialized in index.js (but
  *          comes from the auth.js module)
+ *      app - The express application object which is used to add
+ *          room-specific routing
  */
 
 /*jslint node: true, regexp: true*/
 
-module.exports = function (http, auth) {
+module.exports = function (http, auth, app) {
     'use strict';
     // Initialize modules
     var io = require('socket.io')(http),
@@ -61,7 +63,7 @@ module.exports = function (http, auth) {
     io.on('connection', function (socket) {
         var user = socket.request.user,
             lastMessage = {};
-
+        
         // Checks to see if a message should go to the user based on the user's current room and
         // the message's destination room. Sort of like a mail sorter
         function shouldGoToUser(message) {
@@ -83,8 +85,19 @@ module.exports = function (http, auth) {
         }
 
 
+
+
         // Initialize the user
         (function () {
+            var requestedRoom = socket.request.headers.referer.match(/\/chat\/(.*)/);
+
+            if (requestedRoom !== null) {
+                requestedRoom = requestedRoom[1];
+            }
+            if (user.rooms.indexOf(requestedRoom) === -1) {
+                requestedRoom = null;
+            }
+
             // Bind methods to our socket and user
             attachMethodsToSocket(socket);
             attachMethodsToUser(user);
@@ -96,7 +109,9 @@ module.exports = function (http, auth) {
             user.rooms.forEach(function (room) {
                 socket.join(room);
             });
-            user.currentRoom = null;
+
+            // If the url specified a certain room after /chat/, let's put them in that room
+            user.currentRoom = requestedRoom || 'general';// FIXME replace with default room once accounts are made
 
             // Let everybody know that user has connected
             console.log(user.displayName + ' has connected');
@@ -106,7 +121,8 @@ module.exports = function (http, auth) {
             // Catch the user up with messages and active users
             socket.emit('whats_the_weather_like', {
                 myProfile: user.only(['username', 'displayName', 'rooms', 'permissions']),
-                rooms: rooms.getAllRooms()
+                rooms: rooms.getAllRooms(),
+                currentRoom: user.currentRoom
             });
             socket.emit('who', users.getAll(['displayName', 'stat', 'rooms']));
 
@@ -154,11 +170,16 @@ module.exports = function (http, auth) {
 
 
         // Switches the user's current room so that only messages sent to that room
-        // will be relayed to the user
-        socket.on('room_switch', function (roomInfo) {
+        // will be relayed to the user. If the user is not subscribed to the given
+        // room, an acknowledgment packet containing 'false' will be sent to the user,
+        // otherwise that packet will contain 'true'
+        socket.on('room_switch', function (roomInfo, callback) {
             if (user.rooms.indexOf(roomInfo.room) !== -1) {
                 user.currentRoom = roomInfo.room;
+                callback(true);
                 sendMessagesForRoom();
+            } else {
+                callback(false);
             }
         });
 

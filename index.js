@@ -20,7 +20,7 @@ var app = require('express')();
 var http = require('http').Server(app);
 var auth = require('./server/auth')(app);
 var passport = auth.passport;
-var socketChat = require('./server/socket-chat')(http, auth);
+var socketChat = require('./server/socket-chat')(http, auth, app);
 
 var clientScripts = [
         '/client/chat-client.js',
@@ -94,7 +94,9 @@ app.post('/register', function (req, res, next) {
 });
 
 
-app.get('/chat', function (req, res) {
+
+// Chat room urls!
+app.get(['/chat$', '/chat/*'], function (req, res) {
     'use strict';
     if (req.isAuthenticated()) {
         res.sendFile(__dirname + '/views/index.html');
@@ -103,6 +105,20 @@ app.get('/chat', function (req, res) {
     }
 });
 
+app.get('/chat/', function (req, res) {
+    'use strict';
+    res.redirect('/chat');
+});
+/*
+app.get('/chat/*', function (req, res) {
+    'use strict';
+    if (req.isAuthenticated()) {
+        res.sendFile(__dirname + '/views/index.html');
+    } else {
+        res.redirect('/login');
+    }
+});
+*/
 
 app.get('/logout', function (req, res) {
     'use strict';
