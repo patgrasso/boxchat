@@ -244,5 +244,6 @@ module.exports = {
     register: register,
     update: update,
     getAllRooms: getAllRooms,
-    getAllBoxes: getAllBoxes
+    getAllBoxes: getAllBoxes,
+    init: init
 };

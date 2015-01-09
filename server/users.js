@@ -12,74 +12,80 @@
 
 /*jslint node: true*/
 
-module.exports = function (io, auth) {
+var auth = require('./auth'),
+    io = require('./io-wrapper');
+
+// Return an array of objects, each containing the properties specified
+function getAll(propertyList) {
     'use strict';
-    // Return an array of objects, each containing the properties specified
-    function getAll(propertyList) {
-        var clients = io.eio.clients,
-            userObjects = [],
-            userInfo;
+    var clients = io.eio.clients,
+        userObjects = [],
+        userInfo;
 
-        Object.keys(clients).map(function (uid) {
-            userInfo = { id: clients[uid].request.user.id };
-            propertyList.forEach(function (property) {
-                if (clients[uid].request.user[property] !== undefined) {
-                    userInfo[property] = clients[uid].request.user[property];
-                }
-            });
-            userObjects.push(userInfo);
+    Object.keys(clients).map(function (uid) {
+        userInfo = { id: clients[uid].request.user.id };
+        propertyList.forEach(function (property) {
+            if (clients[uid].request.user[property] !== undefined) {
+                userInfo[property] = clients[uid].request.user[property];
+            }
         });
+        userObjects.push(userInfo);
+    });
 
-        return userObjects;
-    }
-
-
-    // Creates a user status object for relaying a user's status to others
-    function toStatusUser(stat, verbose) {
-        return {
-            displayName: this.displayName,
-            stat: stat || this.stat,
-            verbose: verbose || false
-        };
-    }
+    return userObjects;
+}
 
 
-    // Returns a user object with ONLY the attributes specified in the first
-    // parameter as an array (name attributes by string)
-    function only(attributes) {
-        var that = this,
-            returnUser = {};
-
-        attributes.forEach(function (attr) {
-            returnUser[attr] = that[attr];
-        });
-
-        return returnUser;
-    }
-
-
-    // Disables chat functionality for a certain user. The admin's user
-    // object must be passed as the first parameter
-    function disableChat(adminUser, targetUser) {
-        if (adminUser.permissions.admin === true) {
-            targetUser.permissions.chat = false;
-
-            return auth.update(targetUser, {
-                permissions: targetUser.permissions
-            });
-        }
-        return false;
-    }
-
-    // Bind methods to a user object
-    function bind(user) {
-        user.toStatusUser = toStatusUser;
-        user.only = only;
-    }
-
+// Creates a user status object for relaying a user's status to others
+function toStatusUser(stat, verbose) {
+    'use strict';
     return {
-        getAll: getAll,
-        disableChat: disableChat,
-        bind: bind
+        displayName: this.displayName,
+        stat: stat || this.stat,
+        verbose: verbose || false
     };
+}
+
+
+// Returns a user object with ONLY the attributes specified in the first
+// parameter as an array (name attributes by string)
+function only(attributes) {
+    'use strict';
+    var that = this,
+        returnUser = {};
+
+    attributes.forEach(function (attr) {
+        returnUser[attr] = that[attr];
+    });
+
+    return returnUser;
+}
+
+
+// Disables chat functionality for a certain user. The admin's user
+// object must be passed as the first parameter
+function disableChat(adminUser, targetUser) {
+    'use strict';
+    if (adminUser.permissions.admin === true) {
+        targetUser.permissions.chat = false;
+
+        return auth.update(targetUser, {
+            permissions: targetUser.permissions
+        });
+    }
+    return false;
+}
+
+// Bind methods to a user object
+function bind(user) {
+    'use strict';
+    user.toStatusUser = toStatusUser;
+    user.only = only;
+}
+
+
+module.exports = {
+    getAll: getAll,
+    disableChat: disableChat,
+    bind: bind
 };

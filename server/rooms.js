@@ -1,12 +1,9 @@
 
 
-module.exports = function (boxObj, auth) {
+module.exports = function (boxObj) {
     'use strict';
-    var allRooms = [];
-
-    boxObj.rooms.forEach(function (roomName) {
-        allRooms.push(roomName);
-    });
+    var auth = require('./auth'),
+        allRooms = boxObj.rooms;
 
     // Extension for socket object to join a room
     // * this refers to io.socket object *

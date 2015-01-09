@@ -1,63 +1,73 @@
 var auth = require('./auth'),
-    roomManager = require('./rooms');
+    roomManager = require('./rooms'),
+    boxes = {};
 
 
 function createBox(boxObj) {
     'use strict';
-    var rooms = roomManager(boxObj.rooms);
+    var rooms = roomManager(boxObj),
+        retObj;
 
     function isMember(username) {
         return boxObj.users.indexOf(username) !== -1;
     }
 
-    return {
+    retObj = {
         isMember: isMember,
         getAllRooms: rooms.getAllRooms
     };
+
+    Object.defineProperty(retObj, 'name', {
+        get: function () {
+            return boxObj.name;
+        }
+    });
+
+    Object.defineProperty(retObj, 'rooms', {
+        get: function () {
+            return rooms;
+        }
+    });
+
+    return retObj;
 }
 
 
-auth.getAllBoxes(function (err, boxArray) {
-    boxArray.forEach(function (boxObj) {
-        boxObj.rooms = roomController(boxObj, auth);
-        boxes[boxObj.name] = boxObj;
-    });
-});
-
-
-module.exports = function (auth) {
+function loadBoxes(callback) {
     'use strict';
-    var roomController = require('./rooms'),
-        boxes = {};
+    var cbArray = [];
+
+    auth.getAllBoxes(function (err, boxArray) {
+        boxArray.forEach(function (boxObj) {
+            boxes[boxObj.name] = createBox(boxObj);
+            cbArray.push(boxes[boxObj.name]);
+        });
+        console.log(boxes);                             // FIXME remove
+        callback(cbArray);
+    });
+}
 
 
+function forEach(func) {
+    'use strict';
+    Object.keys(boxes).forEach(function (boxName) {
+        func(boxes[boxName]);
+    });
+}
 
 
-    function bind(socket) {
-        var boxName = socket.request.user.box;
-
-        if (boxes[boxName] !== undefined) {
-            socket.request.user.box = boxes[boxName];
-            boxes[boxName].rooms.bind(socket);
-            return true;
-        }
-        return false;
+function bind(socket, box) {
+    'use strict';
+    if (boxes[box.name] !== undefined) {
+        boxes[box.name].rooms.bind(socket);
+        return true;
     }
+    return false;
+}
 
 
-    function getAllBoxes() {
-        return boxes;
-    }
-
-
-    function getAllBoxNames() {
-        return Object.keys(boxes);
-    }
-
-
-    return {
-        bind: bind,
-        getAllBoxes: getAllBoxes,
-        getAllBoxNames: getAllBoxNames
-    };
+module.exports = {
+    bind: bind,
+    loadBoxes: loadBoxes,
+    forEach: forEach
 };
