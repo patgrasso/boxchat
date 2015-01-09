@@ -4,58 +4,91 @@ define(['knockout-3.2.0'], function (ko) {
     'use strict';
 
     function observableArray(domElement) {
-        var userVM;
+        var vm;
 
-        function UsersViewModel() {
-            this.userColl = ko.observableArray();
+        function ViewModel() {
+            this.items = ko.observableArray();
         }
 
-        userVM = new UsersViewModel();
+        vm = new ViewModel();
 
 
-        function push(userObj) {
-            userVM.userColl.push(userObj);
+        function push(obj) {
+            vm.items.push(obj);
         }
 
 
-        function remove(userObj) {
-            userVM.userColl.remove(function (item) {
-                return item.displayName === userObj.displayName;
+        function remove(obj) {
+            vm.items.remove(function (item) {
+                return item.displayName === obj.displayName;
             });
         }
 
 
-        function set(userObj) {
+        function contains(itemOrFunc) {
+            var ret = false;
+
+            if (typeof itemOrFunc === 'function') {
+                vm.items().forEach(function (item) {
+                    if (itemOrFunc(item)) {
+                        ret = true;
+                    }
+                });
+            } else if (vm.items().indexOf(itemOrFunc) !== -1) {
+                ret = true;
+            }
+
+            return ret;
+        }
+
+
+        function set(obj) {
             var alreadyExists = false;
 
-            userVM.userColl().forEach(function (item) {
-                if (item.displayName === userObj.displayname) {         // FIXME This is probably really bad, but
+            contains(function (item) {
+                if (item.displayName === obj.displayname) {         // FIXME This is probably really bad, but
                     alreadyExists = true;                               // I'm too tired. Figure it out another time
                 }                                                       // (Referring to iterating and bool to find item)
             });
 
             if (alreadyExists) {
-                userVM.userColl.replace(function (item) {
-                    return item.displayName === userObj.displayName;
-                }, userObj);
+                vm.items.replace(function (item) {
+                    return item.displayName === obj.displayName;
+                }, obj);
             } else {
-                push(userObj);
+                push(obj);
             }
         }
 
 
-        function removeAll() {
-            userVM.userColl.removeAll();
+        // Only necessary when objects are the values in the array
+        function get(func) {
+            var ret = null;
+
+            vm.items().forEach(function (item) {
+                if (func(item)) {
+                    ret = item;
+                }
+            });
+
+            return ret;
         }
 
 
-        ko.applyBindings(userVM, domElement);
+        function removeAll() {
+            vm.items.removeAll();
+        }
+
+
+        ko.applyBindings(vm, domElement);
 
         return {
             push: push,
             remove: remove,
             removeAll: removeAll,
-            set: set
+            set: set,
+            get: get,
+            contains: contains
         };
     }
 

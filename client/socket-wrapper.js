@@ -24,7 +24,7 @@ define(['../socket.io/socket.io.js'], function (io) {
     if (request.status === 200) {
         sock = io('/' + request.responseText);
         sock.on('disconnect', function () {
-            alert('Disconnected from Server');
+            console.warn('Disconnected from Server');
         });
         return sock;
     }

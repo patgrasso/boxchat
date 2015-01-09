@@ -11,9 +11,9 @@
 /*global define*/
 
 
-define(['socket-wrapper'], function (socket) {
+define(['socket-wrapper', 'binder', 'knockout-3.2.0'], function (socket, binder, ko) {
     'use strict';
-    var rooms = {},//binder.observable(), // TODO: implement observable
+    var rooms = binder.observableArray(document.getElementById('roomlist')),
         currentRoom,
         returnObject;
 
@@ -21,10 +21,9 @@ define(['socket-wrapper'], function (socket) {
 
     // Factory for creating a room. Attaches a message handler (so that messages
     // can be pushed to the room) from messagelist and .... 
-    // TODO: Add more stuff (if necessary, obviously)
     function createRoom(roomName) {
         var myName = roomName,
-            unseenMessages = 0;
+            unseenMessages = ko.observable(0);
 
         return {
             name: myName,
@@ -35,7 +34,9 @@ define(['socket-wrapper'], function (socket) {
 
     // Simple check to see if a room is already in the collection
     function roomExists(roomName) {
-        return rooms[roomName] !== undefined;
+        return rooms.contains(function (item) {
+            return item.name === roomName;
+        });
     }
 
 
@@ -46,7 +47,7 @@ define(['socket-wrapper'], function (socket) {
     // already exist
     function addRoom(roomName) {
         if (!roomExists(roomName)) {
-            rooms[roomName] = createRoom(roomName);
+            rooms.push(createRoom(roomName));
             return true;
         }
         return false;
@@ -87,11 +88,16 @@ define(['socket-wrapper'], function (socket) {
 
     // Adds 1 to 'unseenMessages' for a given room
     function incrementMessageCount(messageObj) {
+        var roomObj;
+
         if (typeof messageObj === 'object') {
             messageObj = messageObj.room;
         }
         if (messageObj !== currentRoom) {
-            rooms[messageObj].unseenMessages += 1;
+            roomObj = rooms.get(function (item) {
+                return item.name === messageObj;
+            });
+            roomObj.unseenMessages(roomObj.unseenMessages() + 1);
         }
     }
 

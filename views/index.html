@@ -3,8 +3,10 @@
     <head>
         <meta charset="utf-8" />
 		<title>BoxChat</title>
+        <script>
+            var global = {};
+        </script>
         <script src="http://code.jquery.com/jquery-1.11.1.js"></script><style type="text/css"></style>
-        <!--script src="/socket.io/socket.io.js"></script-->
 		<script data-main="/client/chat-client.js" src="/client/require.js"></script>
         <link rel="stylesheet" href="/css/indexstyle.css" />
 	</head>
@@ -15,13 +17,16 @@
                 <header>
         	        <h1>BoxChat</h1>
                 </header>
-                <ul id="userlist" data-bind="foreach: userColl">
+                <h3>Users</h3>
+                <ul id="userlist" data-bind="foreach: items">
                     <li data-bind="text: displayName"></li>
                 </ul>
                 <!-- temporary -->
-                <form id="switchroom" action="">
-                    <input type="text" name="room" id="r" autocomplete="off" tabindex="-1" />
-                </form>
+                <br />
+                <h3>Rooms</h3>
+                <ul id="roomlist" data-bind="foreach: items">
+                    <li><a href="" data-bind="value: name, text: name" onclick="global.changeRoom(this); return false;"></a></li>
+                </ul>
                 <!-- end temporary -->
                 <a tabindex="-1" href="/logout">Log Out</a>
 				<!-- Users Box End -->

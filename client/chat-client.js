@@ -61,17 +61,14 @@ require(['binder',
 
 
         // Change room form submission function
-        $('#switchroom').submit(function (e) {
-            e.preventDefault();
-            e.stopImmediatePropagation();
-            if (self.rooms.indexOf($('#r').val()) === -1) {
+        global.changeRoom = function (elem) {
+            if (self.rooms.indexOf(elem.value) === -1) {
                 alert('You are not a member of that room.\nEnter /join [room] to join a room.');
                 return false;
             }
-            rooms.enter($('#r').val());
-            $('#r').val('');
+            rooms.enter(elem.value);
             return false;
-        });
+        };
 
 
         // Initialize notifications
