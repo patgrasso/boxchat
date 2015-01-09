@@ -28,7 +28,7 @@ require(['binder',
 
     function (binder, messageList, rooms, notifications, socket) {
         'use strict';
-        var users = {},
+        var users = binder.observableArray(document.getElementById('userlist')),
             self,
 
             usersTyping = (function () {
@@ -36,12 +36,15 @@ require(['binder',
 
             })();
 
-
+/*
         // Bind users[] to #online_users (<ul>) so that any changes to users[] will
         // reflect on the page immediately
         binder.attach(users, 'userlist', function (user) {
             return user; // Return the user's name to be displayed in the <li>
         });
+*/
+
+
 
 
         // Chat form submission function
@@ -90,11 +93,9 @@ require(['binder',
 
         // userArr contains user objects for every active in the room
         socket.on('who', function (userArr) {
-            Object.keys(users).forEach(function (username) {
-                delete users[username];
-            });
-            userArr.forEach(function (user) {
-                users[user.displayName] = user;
+            users.removeAll();
+            userArr.forEach(function (userObj) {
+                users.push(userObj);
             });
         });
 
@@ -114,9 +115,9 @@ require(['binder',
         // document for more information on what this might contain
         socket.on('user_status', function (user) {
             if (user.stat === 'offline') {
-                delete users[user.displayName];
+                users.remove(user);
             } else {
-                users[user.displayName] = user;
+                users.set(user);
             }
         });
 

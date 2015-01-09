@@ -1,106 +1,67 @@
-/**
- *  Name: binder.js
- *  Author: Patrick Grasso
- *  Description: This module provides functions that allow data bindings
- *      between javascript objects and DOM elements so that whenever the
- *      javascript object changes, the DOM element representing that
- *      object will update, eliminating the need to constantly remember
- *      to update the UI after every change to the object.
- *
- *      ~! Right now this only supports a bind between []'s and <ul>'s !~
- *  Dependencies:
- *      Object.observe() - Watches the state of and object and calls the
- *          callback function with the object's changes whenever it does
- *          change.
- *          !!! This is only supported in chrome, so consider just switching
- *              to Knockout.js !!!      
- */
-
-/*jslint browser: true*/
 /*global define*/
 
-define(function () {
+define(['knockout-3.2.0'], function (ko) {
     'use strict';
-    var attachments = [];
 
-    /**
-     *  ListElement (constructor) - A wrapper object for list (UL or OL) elements
-     *      with the ability to modify their contents quickly
-     */
-    function ListElement(id) {
-        this.element = document.getElementById(id);
+    function observableArray(domElement) {
+        var userVM;
 
-        function empty() {
-            this.element.innerHTML = '';
+        function UsersViewModel() {
+            this.userColl = ko.observableArray();
         }
 
-        // For <ul>s
-        function append(text) {
-            var textNode = document.createTextNode(text),
-                newListItem = document.createElement('li');
-            newListItem.appendChild(textNode);
-            this.element.appendChild(newListItem);
+        userVM = new UsersViewModel();
+
+
+        function push(userObj) {
+            userVM.userColl.push(userObj);
         }
 
-        function replaceAllList(list, convertFunc) {
-            var li,
-                ul = document.createElement('ul');
 
-            if (convertFunc !== undefined && arguments.length > 1) {
-                list = list.map(convertFunc);
-            }
+        function remove(userObj) {
+            userVM.userColl.remove(function (item) {
+                return item.displayName === userObj.displayName;
+            });
+        }
 
-            list.forEach(function (textItem) {
-                li = document.createElement('li');
-                li.innerText = textItem;
-                ul.appendChild(li);
+
+        function set(userObj) {
+            var alreadyExists = false;
+
+            userVM.userColl().forEach(function (item) {
+                if (item.displayName === userObj.displayname) {         // FIXME This is probably really bad, but
+                    alreadyExists = true;                               // I'm too tired. Figure it out another time
+                }                                                       // (Referring to iterating and bool to find item)
             });
 
-            this.element.innerHTML = ul.innerHTML;
-        }
-
-
-        // For <p>s (or other simple text element)
-        function replaceAllText(list, convertFunc) {
-            this.element.innerText = convertFunc(list);
-        }
-
-
-        // Attach the correct set of methods for each type of element
-        switch (this.element.nodeName) {
-        case 'UL':
-            this.replaceAll = replaceAllList;
-            break;
-        case 'P':
-            this.replaceAll = replaceAllText;
-            break;
-        }
-    }
-
-
-    // Given an object (right now only working with arrays and <ul>s),
-    // this sets up an observer on that object and updates the <ul>
-    // specified by elementId. convertFunc, if specified, is a map
-    // function that is called on each item in obj, the return value
-    // of which will become that <li>s innerText.
-    function attach(obj, elementId, convertFunc) {
-        var binderElem = new ListElement(elementId);
-
-        Object.observe(obj, function (changes) {
-            // Add dynamic functionality to determine if insert() would be
-            // better here rather than replaceAll()
-            if (Array.isArray(obj)) {
-                binderElem.replaceAll(changes[0].object, convertFunc);
-            } else if (typeof obj === 'object') {
-                binderElem.replaceAll(Object.keys(changes[0].object), convertFunc);
+            if (alreadyExists) {
+                userVM.userColl.replace(function (item) {
+                    return item.displayName === userObj.displayName;
+                }, userObj);
+            } else {
+                push(userObj);
             }
-        });
+        }
 
-        attachments.push(binderElem);
+
+        function removeAll() {
+            userVM.userColl.removeAll();
+        }
+
+
+        ko.applyBindings(userVM, domElement);
+
+        return {
+            push: push,
+            remove: remove,
+            removeAll: removeAll,
+            set: set
+        };
     }
 
-    return {
-        attach: attach
-    };
 
+    // Module constructors
+    return {
+        observableArray: observableArray
+    };
 });

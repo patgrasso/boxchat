@@ -15,8 +15,8 @@
                 <header>
         	        <h1>BoxChat</h1>
                 </header>
-                <ul id="userlist">
-                    <li>bluesledmaster</li>
+                <ul id="userlist" data-bind="foreach: userColl">
+                    <li data-bind="text: displayName"></li>
                 </ul>
                 <!-- temporary -->
                 <form id="switchroom" action="">

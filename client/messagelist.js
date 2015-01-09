@@ -72,6 +72,8 @@ define(function () {
     function clearMessages() {
         if (viewObject) {
             viewObject.innerHTML = '';
+            lastMessageTime = null;
+            lastMessageOwner = null;
         }
     }
 

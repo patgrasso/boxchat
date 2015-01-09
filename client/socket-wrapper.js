@@ -10,17 +10,23 @@
  */
 
 /*jslint browser: true*/
-/*global define*/
+/*global define, alert*/
 
 
 define(['../socket.io/socket.io.js'], function (io) {
     'use strict';
-    var request = new XMLHttpRequest();
+    var sock,
+        request = new XMLHttpRequest();
+
     request.open('GET', '/userInfo/box', false);
     request.send(null);
 
     if (request.status === 200) {
-        return io('/' + request.responseText);
+        sock = io('/' + request.responseText);
+        sock.on('disconnect', function () {
+            alert('Disconnected from Server');
+        });
+        return sock;
     }
     return null;
 });

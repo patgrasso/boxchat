@@ -134,6 +134,7 @@ function login(req, res, next) {
         console.log(user);
 
         req.logIn(user, function (err) {
+            console.log(err);
             if (err) {
                 return next(err);
             }

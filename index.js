@@ -29,7 +29,9 @@ var clientScripts = [
         '/client/messagelist.js',
         '/client/notifications.js',
         '/client/rooms.js',
-        '/client/socket-wrapper.js'
+        '/client/users.js',
+        '/client/socket-wrapper.js',
+        '/client/knockout-3.2.0.js'
     ];
 
 var clientCSS = [
