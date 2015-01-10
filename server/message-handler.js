@@ -94,9 +94,20 @@ function bind(socket, nsp) {
     }
 
 
+    // Notifies all other users when a user begins/stops typing
+    function onUserTyping(isTyping) {
+        socket.broadcast.emit('user_typing', {
+            displayName: user.displayName,
+            currentRoom: user.currentRoom,
+            isTyping: isTyping
+        });
+    }
+
+
     socket.on('chat_message', onChatMessage);
     socket.on('room_switch', onRoomSwitch);
     socket.on('disconnect', onDisconnect);
+    socket.on('user_typing', onUserTyping);
 
 
     return {

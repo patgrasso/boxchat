@@ -1,9 +1,21 @@
+/**
+ *  Name: binder.js
+ *  Author: Patrick Grasso
+ *  Description: binder.js is a knockout.js wrapper for observable arrays which
+ *      allows other modules to create collections monitored by knockout, with
+ *      the functionalities of knockout observablearrays, but without the
+ *      complexity. A comfortable layer of abstraction.
+ *  Dependencies:
+ *      knockout-3.2.0 - The MVVM framework that allows for data-binding to the
+ *          view.
+ */
+
 /*global define*/
 
 define(['knockout-3.2.0'], function (ko) {
     'use strict';
 
-    function observableArray(domElement) {
+    function observableArray(domElement, manuallyApplyBindings) {
         var vm, returnObject;
 
         function ViewModel() {
@@ -70,7 +82,20 @@ define(['knockout-3.2.0'], function (ko) {
         }
 
 
-        ko.applyBindings(vm, domElement);
+        function attachToVM(name, item) {
+            vm[name] = item;
+        }
+
+
+        function applyBindings(elem) {
+            ko.cleanNode(elem || domElement);
+            ko.applyBindings(vm, elem || domElement);
+        }
+
+
+        if (manuallyApplyBindings !== true) {
+            ko.applyBindings(vm, domElement);
+        }
 
         returnObject = {
             push: push,
@@ -78,7 +103,9 @@ define(['knockout-3.2.0'], function (ko) {
             removeAll: removeAll,
             set: set,
             get: get,
-            contains: contains
+            contains: contains,
+            attachToVM: attachToVM,
+            applyBindings: applyBindings
         };
 
         Object.defineProperty(returnObject, 'vm', {

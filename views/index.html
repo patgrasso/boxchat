@@ -41,13 +41,13 @@
                     </li>
                 </ul>
                 <form id="messageform" action="">
-                    <input type="text" name="content" id="m" autocomplete="off" autofocus />
+                    <input type="text" name="content" id="m" onkeydown="global.messageFormKeyPress()" autocomplete="off" autofocus />
                 </form>
                 <div id="usersTyping">
                     <p data-bind="foreach: items">
                         <span data-bind="text: $rawData"></span>
                     </p>
-                    <!--span data-bind="text: typingSuffix"></span-->
+                    <p data-bind="text: typingSuffix"></p>
                 </div>
                 <!-- Message Box End -->
             </section>

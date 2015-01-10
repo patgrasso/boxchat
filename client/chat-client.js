@@ -13,11 +13,12 @@
  *      notifications - Handles all notifications
  *      socket-wrapper - socket.io object that allows the client to communicate via
  *          websockets with the server
+ *      typinghint - Lets the other users know when this user is typing, and
+ *          displays the other users that are typing using binder.js
  */
 
 /*jslint browser: true*/
 /*global $, io, alert*/
-
 
 require(['binder',
          'messagelist',
@@ -41,6 +42,7 @@ require(['binder',
                 room: rooms.currentRoom
             });
             $('#m').val('');
+            typinghint.stopTyping();
             return false;
         });
 
@@ -119,6 +121,9 @@ require(['binder',
 
         // Indicates whether a user is typing or not in a certain room
         socket.on('user_typing', function (msg) {
+            if (msg.currentRoom !== rooms.currentRoom) {
+                return;
+            }
             if (msg.isTyping === true) {
                 typinghint.addPerson(msg.displayName);
             } else if (msg.isTyping === false) {

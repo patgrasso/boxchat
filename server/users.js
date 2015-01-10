@@ -6,6 +6,7 @@
  *      was to simplify global user access, but there is not a ton of need
  *      for that anyway (so far) so this module is relatively simplistic
  *  Dependencies:
+ *      auth - For the ability to communicate with the database
  *      io - socket.io object that contains all active client user objects on
  *          it thanks to passport.socketio
  */
@@ -23,7 +24,7 @@ function getAll(propertyList) {
         userInfo;
 
     Object.keys(clients).map(function (uid) {
-        userInfo = { id: clients[uid].request.user.id };
+        userInfo = {};//{ id: clients[uid].request.user.id };
         propertyList.forEach(function (property) {
             if (clients[uid].request.user[property] !== undefined) {
                 userInfo[property] = clients[uid].request.user[property];
