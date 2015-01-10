@@ -25,7 +25,7 @@
                 <br />
                 <h3>Rooms</h3>
                 <ul id="roomlist" data-bind="foreach: items">
-                    <li><a href="" data-bind="value: name, text: name" onclick="global.changeRoom(this); return false;"></a></li>
+                    <li><a data-bind="value: name, text: name" onclick="global.changeRoom(this); return false;"></a></li>
                 </ul>
                 <!-- end temporary -->
                 <a tabindex="-1" href="/logout">Log Out</a>
@@ -43,6 +43,12 @@
                 <form id="messageform" action="">
                     <input type="text" name="content" id="m" autocomplete="off" autofocus />
                 </form>
+                <div id="usersTyping">
+                    <p data-bind="foreach: items">
+                        <span data-bind="text: $rawData"></span>
+                    </p>
+                    <!--span data-bind="text: typingSuffix"></span-->
+                </div>
                 <!-- Message Box End -->
             </section>
             <section>

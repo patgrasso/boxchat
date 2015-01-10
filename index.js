@@ -31,7 +31,8 @@ var clientScripts = [
         '/client/rooms.js',
         '/client/users.js',
         '/client/socket-wrapper.js',
-        '/client/knockout-3.2.0.js'
+        '/client/knockout-3.2.0.js',
+        '/client/typinghint.js'
     ];
 
 var clientCSS = [

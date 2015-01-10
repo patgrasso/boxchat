@@ -4,7 +4,7 @@ define(['knockout-3.2.0'], function (ko) {
     'use strict';
 
     function observableArray(domElement) {
-        var vm;
+        var vm, returnObject;
 
         function ViewModel() {
             this.items = ko.observableArray();
@@ -18,10 +18,8 @@ define(['knockout-3.2.0'], function (ko) {
         }
 
 
-        function remove(obj) {
-            vm.items.remove(function (item) {
-                return item.displayName === obj.displayName;
-            });
+        function remove(func) {
+            vm.items.remove(func);
         }
 
 
@@ -42,19 +40,11 @@ define(['knockout-3.2.0'], function (ko) {
         }
 
 
-        function set(obj) {
-            var alreadyExists = false;
-
-            contains(function (item) {
-                if (item.displayName === obj.displayname) {         // FIXME This is probably really bad, but
-                    alreadyExists = true;                               // I'm too tired. Figure it out another time
-                }                                                       // (Referring to iterating and bool to find item)
-            });
+        function set(obj, func) {
+            var alreadyExists = contains(func);
 
             if (alreadyExists) {
-                vm.items.replace(function (item) {
-                    return item.displayName === obj.displayName;
-                }, obj);
+                vm.items.replace(func, obj);
             } else {
                 push(obj);
             }
@@ -82,7 +72,7 @@ define(['knockout-3.2.0'], function (ko) {
 
         ko.applyBindings(vm, domElement);
 
-        return {
+        returnObject = {
             push: push,
             remove: remove,
             removeAll: removeAll,
@@ -90,6 +80,14 @@ define(['knockout-3.2.0'], function (ko) {
             get: get,
             contains: contains
         };
+
+        Object.defineProperty(returnObject, 'vm', {
+            get: function () {
+                return vm;
+            }
+        });
+
+        return returnObject;
     }
 
 

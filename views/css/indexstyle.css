@@ -64,6 +64,10 @@ a:hover {
 	padding: 10px;
 }
 
+a:not([href]) {
+    cursor: pointer;
+}
+
 h1, h2, h3 {
 	padding: 10px;
 	margin: 0;
@@ -154,6 +158,12 @@ section {
 #messageform > input {
 	width: 100%;
 	padding: 7px;
+}
+
+#usersTyping {
+    position: absolute;
+    bottom: -10px;
+    left: 20px;
 }
 
 

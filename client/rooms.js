@@ -60,14 +60,21 @@ define(['socket-wrapper', 'binder', 'knockout-3.2.0'], function (socket, binder,
     // callback value is set to true, change currentRoom and push a history
     // state using the history API so the URL reflects this room change
     function enterRoom(roomName, doPushHistoryState) {
-        if (roomExists(roomName)) {
+        var replaceState = currentRoom === undefined && history.state === null;
+
+        if (currentRoom === undefined) {
+            doPushHistoryState = false;
+        }
+        if (roomExists(roomName) && roomName !== currentRoom) {
             socket.emit('room_switch', {
                 room: roomName
             }, function (allowedToJoin) {
                 if (allowedToJoin === true && history) {
                     currentRoom = roomName;
-                    if (doPushHistoryState !== false) {
+                    if (doPushHistoryState !== false && !replaceState) {
                         history.pushState({room: currentRoom}, currentRoom, '/chat/' + currentRoom);
+                    } else if (replaceState) {
+                        history.replaceState({room: currentRoom}, currentRoom, '/chat/' + currentRoom);
                     }
                 }
             });

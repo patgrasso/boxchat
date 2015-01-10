@@ -23,29 +23,14 @@ require(['binder',
          'messagelist',
          'rooms',
          'notifications',
-         'socket-wrapper'
+         'socket-wrapper',
+         'typinghint'
         ],
 
-    function (binder, messageList, rooms, notifications, socket) {
+    function (binder, messageList, rooms, notifications, socket, typinghint) {
         'use strict';
         var users = binder.observableArray(document.getElementById('userlist')),
-            self,
-
-            usersTyping = (function () {
-                var peopleWhoAreTyping = [];
-
-            })();
-
-/*
-        // Bind users[] to #online_users (<ul>) so that any changes to users[] will
-        // reflect on the page immediately
-        binder.attach(users, 'userlist', function (user) {
-            return user; // Return the user's name to be displayed in the <li>
-        });
-*/
-
-
-
+            self;
 
         // Chat form submission function
         $('#messageform').submit(function (e) {
@@ -59,7 +44,6 @@ require(['binder',
             return false;
         });
 
-
         // Change room form submission function
         global.changeRoom = function (elem) {
             if (self.rooms.indexOf(elem.value) === -1) {
@@ -69,7 +53,6 @@ require(['binder',
             rooms.enter(elem.value);
             return false;
         };
-
 
         // Initialize notifications
         notifications.init();
@@ -112,9 +95,13 @@ require(['binder',
         // document for more information on what this might contain
         socket.on('user_status', function (user) {
             if (user.stat === 'offline') {
-                users.remove(user);
+                users.remove(function (item) {
+                    return user.displayName === item.displayName;
+                });
             } else {
-                users.set(user);
+                users.set(user, function (item) {
+                    return user.displayName === item.displayName;
+                });
             }
         });
 
@@ -133,9 +120,9 @@ require(['binder',
         // Indicates whether a user is typing or not in a certain room
         socket.on('user_typing', function (msg) {
             if (msg.isTyping === true) {
-                usersTyping.addPerson(msg.displayName);
+                typinghint.addPerson(msg.displayName);
             } else if (msg.isTyping === false) {
-                usersTyping.removePerson(msg.displayName);
+                typinghint.removePerson(msg.displayName);
             }
         });
 
