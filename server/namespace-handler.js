@@ -47,7 +47,6 @@ module.exports = function (socket, nsp, box) {
 
     // Let everybody know that user has connected
     console.log(user.displayName + ' has connected');
-    console.log(user);
     socket.broadcast.emit('user_status', user.toStatusUser('online'));
 
     // Catch the user up with messages and active users

@@ -97,6 +97,19 @@ app.post('/register', function (req, res, next) {
 });
 
 
+app.get('/invite', function (req, res) {
+    'use strict';
+    auth.identifyInvitation(req.param('key'), function (invite) {
+        if (invite === null) {
+            return res.send('Invalid invitation key');
+        }
+        res.sendFile(__dirname + '/views/invite.html');
+    });
+});
+
+app.post('/invite', auth.finishRegistration);
+
+
 
 // Chat room urls!
 app.get(['/chat$', '/chat/*'], function (req, res) {

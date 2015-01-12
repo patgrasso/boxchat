@@ -56,6 +56,7 @@ require(['binder',
             return false;
         };
 
+
         // Initialize notifications
         notifications.init();
 

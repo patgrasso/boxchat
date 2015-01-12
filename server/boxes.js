@@ -1,6 +1,8 @@
 var auth = require('./auth'),
+    database = require('./database'),
     roomManager = require('./rooms'),
-    boxes = {};
+    boxes = {},
+    databaseSubscriptionId;
 
 
 function createBox(boxObj) {
@@ -12,9 +14,20 @@ function createBox(boxObj) {
         return boxObj.users.indexOf(username) !== -1;
     }
 
+    function updateBox() {
+        database.boxes.getByName(boxObj.name, function (box) {
+            boxObj.users = box.users;
+            boxObj.invites = box.invites;
+            boxObj.defaultRoom = box.defaultRoom;
+            boxObj.plugins = box.plugins;
+        });
+        rooms.updateRooms();
+    }
+
     retObj = {
         isMember: isMember,
-        getAllRooms: rooms.getAllRooms
+        getAllRooms: rooms.getAllRooms,
+        updateBox: updateBox
     };
 
     Object.defineProperty(retObj, 'name', {
@@ -64,6 +77,12 @@ function bind(socket, box) {
     }
     return false;
 }
+
+
+databaseSubscriptionId = database.boxes.subscribe(function (boxName) {
+    'use strict';
+    boxes[boxName].updateBox();
+});
 
 
 module.exports = {

@@ -1,9 +1,11 @@
 
+var auth = require('./auth'),
+    database = require('./database');
 
 module.exports = function (boxObj) {
     'use strict';
-    var auth = require('./auth'),
-        allRooms = boxObj.rooms;
+    var allRooms = boxObj.rooms,
+        defaultRoom = boxObj.defaultRoom;
 
     // Extension for socket object to join a room
     // * this refers to io.socket object *
@@ -59,6 +61,15 @@ module.exports = function (boxObj) {
     }
 
 
+    // Queries the database and updates the 'allRooms' array to remain in sync
+    // with the database
+    function updateRooms() {
+        database.boxes.getRooms(boxObj.name, function (rooms) {
+            allRooms = rooms;
+        });
+    }
+
+
     // Binds functions to a socket object
     function bind(socket) {
         socket.joinRoom = joinRoom;
@@ -68,6 +79,7 @@ module.exports = function (boxObj) {
 
     return {
         bind: bind,
-        getAllRooms: getAllRooms
+        getAllRooms: getAllRooms,
+        updateRooms: updateRooms
     };
 };

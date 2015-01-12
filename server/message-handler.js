@@ -2,6 +2,7 @@
 /*jslint regexp: true*/
 
 var archiveConstructor = require('./message-archive');
+var auth = require('./auth');
 
 
 function bind(socket, nsp) {
@@ -37,7 +38,9 @@ function bind(socket, nsp) {
     // Chat Message
     function onChatMessage(msg) {
         var join = /^\/join (.*)/,      // Temporary - replace with parser
-            leave = /^\/leave (.*)/;    // Temporary - replace with parser
+            leave = /^\/leave (.*)/,    // Temporary - replace with parser
+            invite = /^\/invite (.*)/;  // Temporary - replace with parser
+
 
         if (user.permissions.chat === true) {
             lastMessage = {
@@ -50,6 +53,7 @@ function bind(socket, nsp) {
             // Temporary - same as above
             join = msg.content.match(join);
             leave = msg.content.match(leave);
+            invite = msg.content.match(invite);
             if (join !== null && join[1] !== '') {
                 socket.joinRoom(join[1], function () {
                     console.log(user.rooms);
@@ -60,6 +64,25 @@ function bind(socket, nsp) {
                     console.log(user.rooms);
                 });
                 socket.emit('my_profile', user);
+
+            // FIXME this is totally temporary
+            } else if (invite !== null && invite[1] !== '') {
+                auth.inviteUser({
+                    body: {
+                        username: invite[1]
+                    },
+                    user: user,
+                    isAuthenticated: function () { return true; },
+                }, {
+                    status: function () {
+                        return {
+                            send: function () {
+                                return;
+                            }
+                        };
+                    }
+                });
+
             } else {
                 if (user.rooms.indexOf(lastMessage.room) !== -1) {
                     console.log(lastMessage);

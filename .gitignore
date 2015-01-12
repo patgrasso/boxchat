@@ -1,3 +1,5 @@
 *.swp
 message_archive*.dat
 node_modules
+email_information.json
+server_information.json
