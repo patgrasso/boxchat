@@ -60,64 +60,54 @@ boxes.unsubscribe = function (subscriptionId) {
 
 function addXToBox(thing, boxName, x) {
     'use strict';
+    var addObj = {};
+
     if (thing === undefined || boxName === undefined || x === undefined) {
         return;
     }
-    BoxDetails.find({
+
+    addObj[x] = thing;
+
+    BoxDetails.update({
         name: boxName
-    }, function (err, data) {
-        if (err || data.length !== 1) {
-            console.log(err);
-            return;
-        }
-        data = data[0];
-        if (data[x].indexOf(thing) !== -1) {
-            return;
-        }
-        data[x].push(thing);
-        data.save();
+    }, {
+        $addToSet: addObj
+    }, function () {
+        boxObservable.notifyObservers(boxName);
     });
 }
 
 
 function removeXFromBox(thing, boxName, x) {
     'use strict';
-    var index;
+    //var index;
+    var pullObj = {};
 
     if (thing === undefined || boxName === undefined || x === undefined) {
         return;
     }
-    BoxDetails.findOne({
+
+    pullObj[x] = thing;
+
+    BoxDetails.update({
         name: boxName
-    }, function (err, data) {
-        if (err || !data) {
-            return;
-        }
-        if (typeof thing === 'function') {
-            data[x] = data[x].filter(function (item) {
-                return !thing(item);
-            });
-        } else {
-            index = data[x].indexOf(thing);
-            if (index === -1 || index === data[x].length) {
-                return;
-            }
-            data[x].splice(index, 1);
-        }
-        data.save();
+    }, {
+        $pull: pullObj
+    }, function () {
+        boxObservable.notifyObservers(boxName);
     });
 }
 
 
 function getXFromBox(boxName, x, callback) {
     'use strict';
-    BoxDetails.find({
+    BoxDetails.findOne({
         name: boxName
     }, function (err, data) {
-        if (err || data.length !== 1) {
+        if (err || !data) {
             callback(null);
         }
-        callback(data[0][x]);
+        callback(data[x]);
     });
 }
 
@@ -174,8 +164,6 @@ boxes.addUser = function (user, boxName) {
         user = user.username;
     }
     addXToBox(user, boxName, 'users');
-
-    boxObservable.notifyObservers(boxName);
 };
 
 
@@ -185,8 +173,6 @@ boxes.removeUser = function (user, boxName) {
         user = user.username;
     }
     removeXFromBox(user, boxName, 'users');
-
-    boxObservable.notifyObservers(boxName);
 };
 
 
@@ -205,8 +191,6 @@ boxes.addInvite = function (invite, boxName) {
         return false;
     }
     addXToBox(invite, boxName, 'invites');
-
-    boxObservable.notifyObservers(boxName);
     return true;
 };
 
@@ -216,11 +200,7 @@ boxes.removeInvite = function (invite, boxName) {
     if (boxName === undefined) {
         boxName = invite.box;
     }
-    removeXFromBox(function (item) {
-        return item.key === invite.key;
-    }, boxName, 'invites');
-
-    boxObservable.notifyObservers(boxName);
+    removeXFromBox(invite, boxName, 'invites');
 };
 
 
@@ -317,14 +297,14 @@ users.find = function (user, callback) {
         user = user.username;
     }
 
-    UserDetails.find({
+    UserDetails.findOne({
         username: user
     }, function (err, data) {
-        if (err || data.length <= 0) {
+        if (err || !data) {
             callback(null);
             return;
         }
-        callback(data[0]);
+        callback(data);
     });
 };
 

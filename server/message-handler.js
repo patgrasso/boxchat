@@ -3,12 +3,12 @@
 
 var archiveConstructor = require('./message-archive');
 var auth = require('./auth');
-
+var boxes = require('./boxes');
 
 function bind(socket, nsp) {
     'use strict';
     var user = socket.request.user,
-        archive = archiveConstructor('message_archive_' + nsp.name.slice(1) + '.dat'),
+        archive = boxes.boxes[user.box].archive,
         lastMessage = {};
 
     // Checks to see if a message should go to the user based on the user's current room and
@@ -57,13 +57,13 @@ function bind(socket, nsp) {
             if (join !== null && join[1] !== '') {
                 socket.joinRoom(join[1], function () {
                     console.log(user.rooms);
+                    socket.emit('my_profile', user);
                 });
-                socket.emit('my_profile', user);
             } else if (leave !== null && leave[1] !== '') {
                 socket.leaveRoom(leave[1], function () {
                     console.log(user.rooms);
+                    socket.emit('my_profile', user);
                 });
-                socket.emit('my_profile', user);
 
             // FIXME this is totally temporary
             } else if (invite !== null && invite[1] !== '') {

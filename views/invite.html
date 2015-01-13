@@ -3,15 +3,22 @@
     <head>
     </head>
     <body>
-        <p>Complete Your Registration</p>
+        <h3>Complete Your Registration</h3>
+        <p><b>Box: {invite.box}</b></p>
         <form method='post'>
             <label for="username">Email:</label>
-            <input id="username" name="username" type="email" />
+            <input id="username" name="username" type="email" value="{invite.username}" />
+            <br />
             <label for="password">Password:</label>
             <input id="password" name="password" type="password" />
+            <br />
             <label for="displayName">Display Name:</label>
             <input id="displayName" name="displayName" type="text" />
+            <br />
             <input type="submit" />
+            {if error}
+                <p style="color:red">Error: {error}</p>
+            {/if}
         </form>
     </body>
 </html>

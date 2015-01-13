@@ -144,7 +144,9 @@ function inviteUser(req, res) {
                 '<br/>' +
                 '<a href="http://' + serverInfo.ip + '/invite?key=' + key + '">' +
                 serverInfo.ip + '/invite?key=' + key + '</a>'
-        };
+        },
+
+        error = false;
 
     // Error-check email with regex
     if (username.toUpperCase().match(/^[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,4}$/) === null) {
@@ -165,9 +167,13 @@ function inviteUser(req, res) {
             database.boxes.getInvites(req.user.box, function (invites) {
                 invites.forEach(function (item) {
                     if (item.username === username) {
-                        return res.status(400).send('invite already sent');
+                        error = true;
                     }
                 });
+
+                if (error) {
+                    return res.status(400).send('invite already sent');
+                }
 
                 database.boxes.addInvite({
                     username: username,
@@ -231,20 +237,28 @@ function finishRegistration(req, res) {
             }
         };
 
-    // Error-check email with regex
-    if (username.toUpperCase().match(/^[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,4}$/) === null) {
-        res.status(400).send('Please enter a valid email address');
-        console.log(username);
-        return;
-    }
 
     identifyInvitation(req.param('key'), function (invite) {
         if (invite === null) {
             return res.status(404).send('Invalid invitation URL');
         }
+
+        // Error-check email with regex
+        if (username.toUpperCase().match(/^[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,4}$/) === null) {
+            res.status(400).render('invite.html', {
+                invite: invite,
+                error: 'Please enter a valid email address'
+            });
+            console.log(username);
+            return;
+        }
+
         database.users.find(username, function (user) {
             if (user !== null) {
-                return res.status(400).send('user already exists');
+                return res.status(400).render('invite.html', {
+                    invite: invite,
+                    error: 'User already exists'
+                });
             }
 
             database.boxes.removeInvite(invite, invite.box);

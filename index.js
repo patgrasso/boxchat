@@ -18,6 +18,7 @@
 
 var app = require('express')();
 var http = require('http').Server(app);
+var whiskers = require('whiskers');
 var auth = require('./server/auth').init(app);
 var passport = auth.passport;
 var socketChat = require('./server/socket-chat')(http, auth, app);
@@ -38,6 +39,10 @@ var clientScripts = [
 var clientCSS = [
         '/css/indexstyle.css'
     ];
+
+
+app.set('views', __dirname + '/views');
+app.engine('.html', whiskers.__express);
 
 
 // Allow GET for files in clientScripts and clientCSS
@@ -103,7 +108,7 @@ app.get('/invite', function (req, res) {
         if (invite === null) {
             return res.send('Invalid invitation key');
         }
-        res.sendFile(__dirname + '/views/invite.html');
+        res.render('invite.html', { invite: invite });
     });
 });
 
@@ -115,7 +120,9 @@ app.post('/invite', auth.finishRegistration);
 app.get(['/chat$', '/chat/*'], function (req, res) {
     'use strict';
     if (req.isAuthenticated()) {
-        res.sendFile(__dirname + '/views/index.html');
+        res.render('chat.html', {
+            box: req.user.box
+        });
     } else {
         res.redirect('/login');
     }

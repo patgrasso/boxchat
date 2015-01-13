@@ -1,13 +1,16 @@
 var auth = require('./auth'),
     database = require('./database'),
     roomManager = require('./rooms'),
+    archiveConstructor = require('./message-archive'),
     boxes = {},
-    databaseSubscriptionId;
+    databaseSubscriptionId,
+    modExport;
 
 
 function createBox(boxObj) {
     'use strict';
     var rooms = roomManager(boxObj),
+        archive = archiveConstructor('message_archive_' + boxObj.name + '.dat'),
         retObj;
 
     function isMember(username) {
@@ -39,6 +42,12 @@ function createBox(boxObj) {
     Object.defineProperty(retObj, 'rooms', {
         get: function () {
             return rooms;
+        }
+    });
+
+    Object.defineProperty(retObj, 'archive', {
+        get: function () {
+            return archive;
         }
     });
 
@@ -85,8 +94,17 @@ databaseSubscriptionId = database.boxes.subscribe(function (boxName) {
 });
 
 
-module.exports = {
+modExport = {
     bind: bind,
     loadBoxes: loadBoxes,
     forEach: forEach
 };
+
+Object.defineProperty(modExport, 'boxes', {
+    get: function () {
+        'use strict';
+        return boxes;
+    }
+});
+
+module.exports = modExport;

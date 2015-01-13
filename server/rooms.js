@@ -14,15 +14,13 @@ module.exports = function (boxObj) {
             validRoom = false,
             that = this;
 
-        auth.getAllRooms({
-            name: boxObj.name
-        }, function (err, rooms) {
-            rooms.forEach(function (roomObj) {
-                if (roomObj.name === room) {
+        database.boxes.getRooms(boxObj.name, function (rooms) {
+            rooms.forEach(function (availRoom) {
+                if (availRoom === room) {
                     validRoom = true;
                 }
             });
-            if (!err && validRoom && user.rooms.indexOf(room) === -1) {
+            if (validRoom && user.rooms.indexOf(room) === -1) {
                 user.rooms.push(room);
                 that.join(room);
                 auth.update(user, {

@@ -53,6 +53,7 @@ require(['binder',
                 return false;
             }
             rooms.enter(elem.value);
+            typinghint.removeAll();
             return false;
         };
 
@@ -130,6 +131,11 @@ require(['binder',
             } else if (msg.isTyping === false) {
                 typinghint.removePerson(msg.displayName);
             }
+        });
+
+
+        socket.on('my_profile', function (newSelf) {
+            self = newSelf;
         });
 
     });

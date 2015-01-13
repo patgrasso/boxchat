@@ -47,6 +47,11 @@ define(['binder', 'knockout-3.2.0', 'socket-wrapper'], function (binder, ko, soc
     }
 
 
+    function removeAll() {
+        typingUsers.removeAll();
+    }
+
+
     // Detecting when a user begins/stops typing
     global.messageFormKeyPress = function () {
         if (isCurrentlyTyping === false) {
@@ -56,7 +61,6 @@ define(['binder', 'knockout-3.2.0', 'socket-wrapper'], function (binder, ko, soc
         keyPressCount += 1;
         setTimeout(function () {
             keyPressCount -= 1;
-            console.log(keyPressCount);
             if (keyPressCount === 0) {
                 isCurrentlyTyping = false;
                 socket.emit('user_typing', false);
@@ -79,6 +83,7 @@ define(['binder', 'knockout-3.2.0', 'socket-wrapper'], function (binder, ko, soc
     return {
         addPerson: addPerson,
         removePerson: removePerson,
-        stopTyping: stopTyping
+        stopTyping: stopTyping,
+        removeAll: removeAll
     };
 });
